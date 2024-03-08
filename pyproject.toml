@@ -13,6 +13,7 @@ python = "^3.12"
 pytest = "^8.0.2"
 pre-commit = "^3.6.2"
 black = "^24.2.0"
+isort = "^5.13.2"
 
 [build-system]
 requires = ["poetry-core"]
