@@ -19,5 +19,5 @@ EXPOSE 80
 # Define environment variable
 ENV NAME World
 
-# Run app.py when the container launches
-CMD ["python", "app.py"]
+# Run model.py located in the src directory when the container launches
+CMD ["poetry run", "src/model.py"]
