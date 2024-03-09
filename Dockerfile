@@ -20,4 +20,4 @@ EXPOSE 80
 ENV NAME World
 
 # Run model.py located in the src directory when the container launches
-CMD ["poetry run", "src/model.py"]
+CMD ["poetry run", "src/train.py"]
