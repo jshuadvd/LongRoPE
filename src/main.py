@@ -117,7 +117,7 @@ class LongRoPEModel(nn.Module):
         return model
 
 
-def load_data(data_path):
+def load_data():
     # Load and preprocess the dataset
     # Implement your data loading and preprocessing logic here
     # Return the processed dataset
