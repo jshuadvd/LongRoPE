@@ -8,6 +8,10 @@ import io
 
 
 class RoPEPositionalEncoding(nn.Module):
+    """
+    Rotary Position Encoding (RoPE) module.
+    """
+
     def __init__(self, d_model, max_len=5000, base=10000):
         super().__init__()
         self.d_model = d_model
@@ -23,6 +27,18 @@ class RoPEPositionalEncoding(nn.Module):
 
 
 def non_uniform_interpolation(pos_embed, extension_ratio, lambda_factors, n_hat):
+    """
+    Perform non-uniform interpolation on position embeddings.
+
+    Args:
+        pos_embed (torch.Tensor): Position embeddings.
+        extension_ratio (float): Extension ratio for context window.
+        lambda_factors (list): Lambda factors for interpolation.
+        n_hat (int): Threshold for applying interpolation.
+
+    Returns:
+        torch.Tensor: Interpolated position embeddings.
+    """
     d_model = pos_embed.shape[-1]
     interpolated_pos = pos_embed.clone()
 
@@ -46,6 +62,21 @@ def search_lambda_factors(
     num_crossovers,
     max_iterations,
 ):
+    """
+    Search for optimal lambda factors using evolutionary search.
+
+    Args:
+        model (nn.Module): LongRoPE model.
+        data (list): List of input sequences.
+        extension_ratio (float): Extension ratio for context window.
+        population_size (int): Size of the population for evolutionary search.
+        num_mutations (int): Number of mutations per iteration.
+        num_crossovers (int): Number of crossovers per iteration.
+        max_iterations (int): Maximum number of iterations for evolutionary search.
+
+    Returns:
+        list: Optimal lambda factors found by the search.
+    """
     population = initialize_population(population_size, extension_ratio)
 
     for i in range(max_iterations):
@@ -57,6 +88,18 @@ def search_lambda_factors(
 
 
 def progressive_extension(model, data, base_length, target_length):
+    """
+    Progressively extend the context window of the model.
+
+    Args:
+        model (nn.Module): LongRoPE model.
+        data (list): List of input sequences.
+        base_length (int): Base context window length.
+        target_length (int): Target context window length.
+
+    Returns:
+        tuple: (Extended model, lambda factors, base lambda factors)
+    """
     curr_model = model
     curr_length = base_length
 
@@ -75,6 +118,10 @@ def progressive_extension(model, data, base_length, target_length):
 
 
 class LongRoPEModel(nn.Module):
+    """
+    Long Range Rotary Position Encoding (LongRoPE) model.
+    """
+
     def __init__(self, d_model, n_heads, num_layers, max_len=5000):
         super().__init__()
         self.d_model = d_model
@@ -106,6 +153,21 @@ class LongRoPEModel(nn.Module):
         return input_embeddings
 
     def extend_context(self, data_path, target_length, max_sequence_length, tokenizer):
+        """
+        Extend the context window of the model.
+
+        Args:
+            data_path (str): Path to the input data file.
+            target_length (int): Target context window length.
+            max_sequence_length (int): Maximum sequence length for input data.
+            tokenizer: Tokenizer object for encoding input data.
+
+        Returns:
+            LongRoPEModel: Extended LongRoPE model.
+        """
+        if tokenizer is None:
+            raise ValueError("Tokenizer is required for extending context.")
+
         self.extension_ratio = target_length / self.rope.max_len
 
         data = load_data(data_path, tokenizer, max_sequence_length)
@@ -121,7 +183,20 @@ class LongRoPEModel(nn.Module):
 
 
 def load_data(data_path, tokenizer, max_sequence_length):
-    # Load and preprocess the dataset using the specified tokenizer
+    """
+    Load and preprocess the input data.
+
+    Args:
+        data_path (str): Path to the input data file.
+        tokenizer: Tokenizer object for encoding input data.
+        max_sequence_length (int): Maximum sequence length for input data.
+
+    Returns:
+        list: List of preprocessed input sequences.
+    """
+    if data_path is None or tokenizer is None:
+        raise ValueError("Data path and tokenizer are required for loading data.")
+
     if data_path.endswith(".gz"):
         with gzip.open(data_path, "rt", encoding="utf-8") as file:
             text_data = file.read()
@@ -131,36 +206,40 @@ def load_data(data_path, tokenizer, max_sequence_length):
 
     tokenized_data = tokenizer.encode(text_data)
 
-    # Split the tokenized data into sequences of max_sequence_length
     sequences = [
         tokenized_data[i : i + max_sequence_length]
         for i in range(0, len(tokenized_data), max_sequence_length)
     ]
 
-    # Convert sequences to tensors
     tensor_data = [torch.tensor(seq, dtype=torch.long) for seq in sequences]
 
     return tensor_data
 
 
 def initialize_population(population_size, extension_ratio):
+    """
+    Initialize the population for evolutionary search.
+
+    Args:
+        population_size (int): Size of the population.
+        extension_ratio (float): Extension ratio for context window.
+
+    Returns:
+        list: Initialized population.
+    """
     population = []
 
-    # Add PI factors
     population.append(torch.ones(512) * extension_ratio)
 
-    # Add NTK factors
     ntk_factors = torch.tensor([extension_ratio ** (2 * i / 512) for i in range(512)])
     population.append(ntk_factors)
 
-    # Add YaRN factors
     yarn_factors = torch.ones(512)
     yarn_factors[:128] = 1.0
     yarn_factors[128:256] = extension_ratio ** (1 / 3)
     yarn_factors[256:] = extension_ratio
     population.append(yarn_factors)
 
-    # Generate random mutations
     for _ in range(population_size - 3):
         factors = torch.ones(512)
         for i in range(512):
@@ -172,14 +251,23 @@ def initialize_population(population_size, extension_ratio):
 
 
 def evaluate_individual(model, data, individual):
+    """
+    Evaluate an individual lambda factor configuration.
+
+    Args:
+        model (nn.Module): LongRoPE model.
+        data (list): List of input sequences.
+        individual (list): Lambda factor configuration.
+
+    Returns:
+        float: Perplexity score for the individual.
+    """
     model.lambda_factors = individual
     perplexities = []
 
     for seq in data:
         input_ids = seq.unsqueeze(0)
         output = model(input_ids)
-        # Calculate perplexity based on the model output
-        # Implement your perplexity calculation logic here
         perplexity = torch.exp(torch.mean(output))
         perplexities.append(perplexity.item())
 
@@ -187,6 +275,17 @@ def evaluate_individual(model, data, individual):
 
 
 def evaluate_population(model, data, population):
+    """
+    Evaluate the population of lambda factor configurations.
+
+    Args:
+        model (nn.Module): LongRoPE model.
+        data (list): List of input sequences.
+        population (list): Population of lambda factor configurations.
+
+    Returns:
+        list: Perplexity scores for each individual in the population.
+    """
     perplexities = []
     for individual in population:
         perplexity = evaluate_individual(model, data, individual)
@@ -195,11 +294,32 @@ def evaluate_population(model, data, population):
 
 
 def select_topk(population, perplexities, k):
+    """
+    Select the top-k individuals from the population based on perplexity scores.
+
+    Args:
+        population (list): Population of lambda factor configurations.
+        perplexities (list): Perplexity scores for each individual in the population.
+        k (int): Number of top individuals to select.
+
+    Returns:
+        list: Top-k individuals from the population.
+    """
     indices = np.argsort(perplexities)[:k]
     return [population[i] for i in indices]
 
 
 def mutate(parents, num_mutations):
+    """
+    Perform mutation on the parent population.
+
+    Args:
+        parents (list): Parent population.
+        num_mutations (int): Number of mutations to perform.
+
+    Returns:
+        list: Mutated population.
+    """
     mutated_population = []
     for _ in range(num_mutations):
         parent = random.choice(parents)
@@ -212,6 +332,16 @@ def mutate(parents, num_mutations):
 
 
 def crossover(parents, num_crossovers):
+    """
+    Perform crossover on the parent population.
+
+    Args:
+        parents (list): Parent population.
+        num_crossovers (int): Number of crossovers to perform.
+
+    Returns:
+        list: Crossover population.
+    """
     crossover_population = []
     for _ in range(num_crossovers):
         parent1, parent2 = random.sample(parents, 2)
@@ -224,6 +354,20 @@ def crossover(parents, num_crossovers):
 
 
 def fine_tune(model, data, target_length, lambda_factors, n_hat, num_epochs=3):
+    """
+    Fine-tune the LongRoPE model.
+
+    Args:
+        model (nn.Module): LongRoPE model.
+        data (list): List of input sequences.
+        target_length (int): Target context window length.
+        lambda_factors (list): Lambda factors for interpolation.
+        n_hat (int): Threshold for applying interpolation.
+        num_epochs (int, optional): Number of fine-tuning epochs. Defaults to 3.
+
+    Returns:
+        nn.Module: Fine-tuned LongRoPE model.
+    """
     model.lambda_factors = lambda_factors
     model.n_hat = n_hat
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
@@ -232,7 +376,6 @@ def fine_tune(model, data, target_length, lambda_factors, n_hat, num_epochs=3):
         for seq in data:
             optimizer.zero_grad()
 
-            # Create mixed-length sequences for fine-tuning
             seq_len = seq.size(0)
             if seq_len <= target_length:
                 input_ids = seq.unsqueeze(0)
@@ -241,8 +384,6 @@ def fine_tune(model, data, target_length, lambda_factors, n_hat, num_epochs=3):
                 input_ids = seq[start_idx : start_idx + target_length].unsqueeze(0)
 
             output = model(input_ids)
-            # Calculate loss based on the model output
-            # Implement your loss calculation logic here
             loss = torch.mean(output)
 
             loss.backward()
