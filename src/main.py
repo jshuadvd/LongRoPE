@@ -117,11 +117,24 @@ class LongRoPEModel(nn.Module):
         return model
 
 
-def load_data():
-    # Load and preprocess the dataset
-    # Implement your data loading and preprocessing logic here
-    # Return the processed dataset
-    pass
+def load_data(data_path, tokenizer, max_length):
+    # Load the dataset from a file
+    with open(data_path, "r", encoding="utf-8") as file:
+        text_data = file.read()
+
+    # Tokenize the text data
+    tokenized_data = tokenizer.encode(text_data)
+
+    # Split the tokenized data into sequences of max_length
+    sequences = []
+    for i in range(0, len(tokenized_data), max_length):
+        seq = tokenized_data[i : i + max_length]
+        sequences.append(seq)
+
+    # Convert sequences to tensors
+    tensor_data = [torch.tensor(seq, dtype=torch.long) for seq in sequences]
+
+    return tensor_data
 
 
 def initialize_population(population_size, extension_ratio):
