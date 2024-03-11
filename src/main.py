@@ -120,6 +120,45 @@ def progressive_extension(model, data, base_length, target_length):
 class LongRoPEModel(nn.Module):
     """
     Long Range Rotary Position Encoding (LongRoPE) model.
+
+    This model extends the context window of transformer-based models beyond the
+    typical limit by using non-uniform interpolation of rotary position embeddings.
+    It enables the model to handle longer input sequences while maintaining the
+    ability to capture long-range dependencies.
+
+    Attributes:
+        d_model (int): Dimension of the model.
+        n_heads (int): Number of attention heads.
+        num_layers (int): Number of transformer layers.
+        max_len (int): Maximum sequence length.
+        rope (RoPEPositionalEncoding): Rotary Position Encoding (RoPE) module.
+        transformers (nn.ModuleList): List of transformer encoder layers.
+        lambda_factors (list): Lambda factors for non-uniform interpolation.
+        lambda_factors_base (list): Lambda factors for the base model.
+        extension_ratio (float): Extension ratio for the context window.
+        n_hat (int): Threshold for applying interpolation.
+
+    Methods:
+        forward(input_ids):
+            Perform forward pass on the input sequence.
+
+            Args:
+                input_ids (torch.Tensor): Input sequence tensor.
+
+            Returns:
+                torch.Tensor: Output embeddings from the model.
+
+        extend_context(data_path, target_length, max_sequence_length, tokenizer):
+            Extend the context window of the model.
+
+            Args:
+                data_path (str): Path to the input data file.
+                target_length (int): Target context window length.
+                max_sequence_length (int): Maximum sequence length for input data.
+                tokenizer: Tokenizer object for encoding input data.
+
+            Returns:
+                LongRoPEModel: Extended LongRoPE model.
     """
 
     def __init__(self, d_model, n_heads, num_layers, max_len=5000):
