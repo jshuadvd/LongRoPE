@@ -3,6 +3,8 @@ import torch.nn as nn
 import torch.optim as optim
 import random
 import numpy as np
+import gzip
+import io
 
 
 class RoPEPositionalEncoding(nn.Module):
@@ -103,9 +105,10 @@ class LongRoPEModel(nn.Module):
 
         return input_embeddings
 
-    def extend_context(self, data, target_length):
+    def extend_context(self, data_path, target_length, max_sequence_length, tokenizer):
         self.extension_ratio = target_length / self.rope.max_len
 
+        data = load_data(data_path, tokenizer, max_sequence_length)
         model, lambda_factors, lambda_factors_base = progressive_extension(
             self, data, self.rope.max_len, target_length
         )
@@ -117,19 +120,22 @@ class LongRoPEModel(nn.Module):
         return model
 
 
-def load_data(data_path, tokenizer, max_length):
-    # Load the dataset from a file
-    with open(data_path, "r", encoding="utf-8") as file:
-        text_data = file.read()
+def load_data(data_path, tokenizer, max_sequence_length):
+    # Load and preprocess the dataset using the specified tokenizer
+    if data_path.endswith(".gz"):
+        with gzip.open(data_path, "rt", encoding="utf-8") as file:
+            text_data = file.read()
+    else:
+        with open(data_path, "r", encoding="utf-8") as file:
+            text_data = file.read()
 
-    # Tokenize the text data
     tokenized_data = tokenizer.encode(text_data)
 
-    # Split the tokenized data into sequences of max_length
-    sequences = []
-    for i in range(0, len(tokenized_data), max_length):
-        seq = tokenized_data[i : i + max_length]
-        sequences.append(seq)
+    # Split the tokenized data into sequences of max_sequence_length
+    sequences = [
+        tokenized_data[i : i + max_sequence_length]
+        for i in range(0, len(tokenized_data), max_sequence_length)
+    ]
 
     # Convert sequences to tensors
     tensor_data = [torch.tensor(seq, dtype=torch.long) for seq in sequences]
