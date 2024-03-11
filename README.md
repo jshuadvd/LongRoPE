@@ -25,6 +25,24 @@ Instructions for setting up the LongRoPE environment, including required librari
 ## Usage
 Comprehensive examples demonstrating how to leverage LongRoPE for various applications, from text analysis to generating extensive documents.
 
+```python
+# Example usage
+data_path = "path/to/your/dataset"
+d_model = 512
+n_heads = 8
+num_layers = 6
+base_length = 4096
+target_length = 2048 * 1024
+
+data = load_data(data_path)
+model = LongRoPEModel(d_model, n_heads, num_layers, base_length)
+model = model.extend_context(data, target_length)
+
+input_ids = torch.randn(2, target_length, d_model)
+output = model(input_ids)
+print(output.shape)  # Expected shape: (batch_size, target_length, d_model)
+```
+
 ## Model Architecture
 An in-depth look at the structural modifications and their implications for model performance. This section would ideally cover the technical design and the rationale behind each decision.
 
