@@ -13,6 +13,8 @@ The key ideas are:
 
 The method is applied to LLaMA2 and Mistral. Experiments across various tasks demonstrate LongRoPE's effectiveness in maintaining performance from 4k to 2048k context lengths.
 
+## Note: This repository is a work in progress and is not yet ready for production use. Please refer to the paper for more details.
+
 ### Potential implementations:
 - Enable in-context learning with more examples to boost LLM reasoning
 - Build LLM agents that leverage longer context for tasks like dialog and question answering
