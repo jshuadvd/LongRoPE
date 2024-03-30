@@ -1,6 +1,6 @@
 # LongRoPE: Extending LLM Context Window Beyond 2 Million Tokens
 
-![LongRoPE](/images/longrope.png)
+![LongRoPE](/images/longrope_interpolation.png)
 
 ## Introduction
 
