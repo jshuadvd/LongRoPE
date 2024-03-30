@@ -1,5 +1,7 @@
 # LongRoPE: Extending LLM Context Window Beyond 2 Million Tokens
 
+![LongRoPE](/images/longrope.png)
+
 ## Introduction
 
 The paper introduces LongRoPE, a method to extend the context window of large language models (LLMs) beyond 2 million tokens.
@@ -14,6 +16,16 @@ The key ideas are:
 
 The method is applied to LLaMA2 and Mistral. Experiments across various tasks demonstrate LongRoPE's effectiveness in maintaining performance from 4k to 2048k context lengths.
 
+## Abstract
+
+The Transformer architecture struggles with the quadratic computational complexity of self-attention and its lack of generalization to token positions unseen at training time. To scale the self-attention computation to a large context, various methods have been proposed, such as the RoPE, AliBi, attention sinks, etc. Nonetheless, none of these solutions can effectively scale to context with millions of tokens while preserving the model's accuracy.
+
+This paper presents a new technique, LongRoPE, expanding the context window of LLMs to over 2 million tokens.
+
+LongRoPE utilizes a progressive extension strategy to attain a 2048k context window without necessitating direct fine-tuning on exceedingly lengthy texts, which are both rare and difficult to procure. This strategy initiates with a 256k extension on a pre-trained LLM, followed by fine-tuning at this length.
+
+To address potential performance declines in the original (shorter) context window, LongRoPE further adjusts the RoPE rescale factors on the extended LLM, scaling down to 4k and 8k context windows on the 256k fine-tuned LLM using its search algorithm to minimize positional interpolation. During inference for sequences under 8k in length, RoPE is updated with these meticulously searched rescale factors.
+
 ## Note: This repository is a work in progress and is not yet ready for production use. Please refer to the paper for more details
 
 ### Potential implementations:
@@ -22,6 +34,7 @@ The method is applied to LLaMA2 and Mistral. Experiments across various tasks de
 - Build LLM agents that leverage longer context for tasks like dialog and question answering
 - Summarize very long documents by utilizing the full document context
 - Improve few-shot learning by providing more contextual examples to models
+- Enable long-term memory by utilizing the full context window
 
 ## Installation
 
