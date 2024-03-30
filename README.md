@@ -28,7 +28,7 @@ To address potential performance declines in the original (shorter) context wind
 
 Testing across various LLMs and tasks requiring long contexts has validated LongRoPE's efficacy. The method significantly maintains low perplexity across evaluation lengths from 4k to 2048k tokens, achieves above 90% accuracy in passkey retrieval, and delivers accuracy comparable to standard benchmarks within a 4096 context window
 
-![LongRoPE](/images/longrope-comparison.png)
+![LongRoPE](/images/longrope-comparison.jpg)
 
 ## Note: This repository is a work in progress and is not yet ready for production use. Please refer to the paper for more details
 
