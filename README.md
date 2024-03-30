@@ -28,7 +28,7 @@ To address potential performance declines in the original (shorter) context wind
 
 ## Note: This repository is a work in progress and is not yet ready for production use. Please refer to the paper for more details
 
-### Potential implementations:
+### Potential implementations
 
 - Enable in-context learning with more examples to boost LLM reasoning
 - Build LLM agents that leverage longer context for tasks like dialog and question answering
