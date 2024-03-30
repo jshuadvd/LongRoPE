@@ -1,7 +1,5 @@
 # LongRoPE: Extending LLM Context Window Beyond 2 Million Tokens
 
-![LongRoPE](/images/longrope_interpolation.png)
-
 ## Introduction
 
 The paper introduces LongRoPE, a method to extend the context window of large language models (LLMs) beyond 2 million tokens.
@@ -25,6 +23,12 @@ This paper presents a new technique, LongRoPE, expanding the context window of L
 LongRoPE utilizes a progressive extension strategy to attain a 2048k context window without necessitating direct fine-tuning on exceedingly lengthy texts, which are both rare and difficult to procure. This strategy initiates with a 256k extension on a pre-trained LLM, followed by fine-tuning at this length.
 
 To address potential performance declines in the original (shorter) context window, LongRoPE further adjusts the RoPE rescale factors on the extended LLM, scaling down to 4k and 8k context windows on the 256k fine-tuned LLM using its search algorithm to minimize positional interpolation. During inference for sequences under 8k in length, RoPE is updated with these meticulously searched rescale factors.
+
+![LongRoPE](/images/longrope_interpolation.png)
+
+Testing across various LLMs and tasks requiring long contexts has validated LongRoPE's efficacy. The method significantly maintains low perplexity across evaluation lengths from 4k to 2048k tokens, achieves above 90% accuracy in passkey retrieval, and delivers accuracy comparable to standard benchmarks within a 4096 context window
+
+![LongRoPE](/images/longrope-comparison.png)
 
 ## Note: This repository is a work in progress and is not yet ready for production use. Please refer to the paper for more details
 
