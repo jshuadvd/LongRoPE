@@ -161,10 +161,12 @@ class LongRoPEModel(nn.Module):
                 LongRoPEModel: Extended LongRoPE model.
     """
 
-    def __init__(self, d_model, n_heads, num_layers, max_len=5000):
+    def __init__(self, d_model, n_heads, num_layers, vocab_size, max_len=5000):
         super().__init__()
         self.d_model = d_model
         self.num_layers = num_layers
+        self.vocab_size = vocab_size  # Add vocab_size to the parameters
+        self.embedding = nn.Embedding(vocab_size, d_model)  # Embedding layer
         self.rope = RoPEPositionalEncoding(d_model, max_len)
         self.transformers = nn.ModuleList(
             [
@@ -176,7 +178,12 @@ class LongRoPEModel(nn.Module):
         self.lambda_factors_base = None
 
     def forward(self, input_ids):
-        positions = torch.arange(input_ids.size(1), device=input_ids.device)
+        # Convert input IDs to embeddings
+        input_embeddings = self.embedding(input_ids)  # Embed input_ids
+
+        positions = torch.arange(input_ids.size(1), device=input_ids.device).unsqueeze(
+            0
+        )
         pos_embeddings = self.rope(positions)
 
         if self.lambda_factors is not None:
@@ -184,12 +191,21 @@ class LongRoPEModel(nn.Module):
                 pos_embeddings, self.extension_ratio, self.lambda_factors, self.n_hat
             )
 
-        input_embeddings = input_ids + pos_embeddings
+        print(
+            f"input_embeddings shape: {input_embeddings.shape}"
+        )  # Updated to input_embeddings
+        print(f"pos_embeddings shape: {pos_embeddings.shape}")
+
+        # Ensure pos_embeddings has the same shape as input_embeddings
+        pos_embeddings = pos_embeddings.expand_as(input_embeddings)
+
+        # Combine input and positional embeddings
+        embeddings = input_embeddings + pos_embeddings
 
         for transformer in self.transformers:
-            input_embeddings = transformer(input_embeddings)
+            embeddings = transformer(embeddings)
 
-        return input_embeddings
+        return embeddings
 
     def extend_context(self, data_path, target_length, max_sequence_length, tokenizer):
         """
