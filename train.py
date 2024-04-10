@@ -1,5 +1,4 @@
 # Train a LongRoPE model on a given dataset
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -8,7 +7,7 @@ import numpy as np
 import gzip
 import io
 
-from longrope import LongRoPEModel, RoPEPositionalEncoding
+from src.main import LongRoPEModel, RoPEPositionalEncoding
 
 
 def load_data(filename):

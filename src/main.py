@@ -432,17 +432,17 @@ def fine_tune(model, data, target_length, lambda_factors, n_hat, num_epochs=3):
 
 
 # Example usage
-data_path = "path/to/your/dataset"
-d_model = 512
-n_heads = 8
-num_layers = 6
-base_length = 4096
-target_length = 2048 * 1024
+# data_path = "path/to/your/dataset"
+# d_model = 512
+# n_heads = 8
+# num_layers = 6
+# base_length = 4096
+# target_length = 2048 * 1024
 
-data = load_data(data_path)
-model = LongRoPEModel(d_model, n_heads, num_layers, base_length)
-model = model.extend_context(data, target_length)
+# data = load_data(data_path)
+# model = LongRoPEModel(d_model, n_heads, num_layers, base_length)
+# model = model.extend_context(data, target_length)
 
-input_ids = torch.randn(2, target_length, d_model)
-output = model(input_ids)
-print(output.shape)  # Expected shape: (batch_size, target_length, d_model)
+# input_ids = torch.randn(2, target_length, d_model)
+# output = model(input_ids)
+# print(output.shape)  # Expected shape: (batch_size, target_length, d_model)

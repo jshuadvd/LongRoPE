@@ -9,6 +9,8 @@ readme = "README.md"
 python = "^3.11"
 torch = "^2.2.1"
 numpy = "^1.26.4"
+ipykernel = "^6.29.4"
+transformers = "^4.39.3"
 
 
 [tool.poetry.group.dev.dependencies]
