@@ -204,32 +204,6 @@ class LongRoPEModel(nn.Module):
             embeddings = transformer(embeddings)
 
         return embeddings
-        # # Convert input IDs to embeddings
-        # input_embeddings = self.embedding(input_ids)  # Embed input_ids
-
-        # # Generate positions based on the current batch's sequence length
-        # positions = torch.arange(input_ids.size(1), device=input_ids.device).unsqueeze(
-        #     0
-        # )
-        # pos_embeddings = self.rope(positions)
-
-        # if self.lambda_factors is not None:
-        #     pos_embeddings = non_uniform_interpolation(
-        #         pos_embeddings, self.extension_ratio, self.lambda_factors, self.n_hat
-        #     )
-
-        #     # Ensure pos_embeddings has the same shape as input_embeddings
-        #     pos_embeddings = pos_embeddings[:, : input_embeddings.size(1), :]
-
-        #     print(f"input_embeddings shape: {input_embeddings.shape}")
-        #     print(f"pos_embeddings shape: {pos_embeddings.shape}")
-
-        #     embeddings = input_embeddings + pos_embeddings
-
-        #     for transformer in self.transformers:
-        #         embeddings = transformer(embeddings)
-
-        #     return embeddings
 
     def extend_context(self, data_path, target_length, max_sequence_length, tokenizer):
         """
