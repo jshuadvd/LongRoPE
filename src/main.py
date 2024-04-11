@@ -23,7 +23,8 @@ class RoPEPositionalEncoding(nn.Module):
 
     def forward(self, positions):
         angles = positions.unsqueeze(-1) * self.theta
-        return torch.stack([angles.cos(), angles.sin()], dim=-1).flatten(-2)
+        sin_cos = torch.stack([angles.cos(), angles.sin()], dim=-1)
+        return sin_cos.view(*sin_cos.shape[:-2], -1)
 
 
 def non_uniform_interpolation(pos_embed, extension_ratio, lambda_factors, n_hat):
@@ -178,9 +179,7 @@ class LongRoPEModel(nn.Module):
         self.lambda_factors_base = None
 
     def forward(self, input_ids):
-        # Convert input IDs to embeddings
-        input_embeddings = self.embedding(input_ids)  # Embed input_ids
-
+        input_embeddings = self.embedding(input_ids)
         positions = torch.arange(input_ids.size(1), device=input_ids.device).unsqueeze(
             0
         )
@@ -191,21 +190,46 @@ class LongRoPEModel(nn.Module):
                 pos_embeddings, self.extension_ratio, self.lambda_factors, self.n_hat
             )
 
-        print(
-            f"input_embeddings shape: {input_embeddings.shape}"
-        )  # Updated to input_embeddings
+        # Ensure pos_embeddings has the same shape as input_embeddings
+        pos_embeddings = pos_embeddings[
+            :, : input_embeddings.size(1), : self.d_model
+        ]  # Adjust to match d_model
+
+        print(f"input_embeddings shape: {input_embeddings.shape}")
         print(f"pos_embeddings shape: {pos_embeddings.shape}")
 
-        # Ensure pos_embeddings has the same shape as input_embeddings
-        pos_embeddings = pos_embeddings.expand_as(input_embeddings)
-
-        # Combine input and positional embeddings
         embeddings = input_embeddings + pos_embeddings
 
         for transformer in self.transformers:
             embeddings = transformer(embeddings)
 
         return embeddings
+        # # Convert input IDs to embeddings
+        # input_embeddings = self.embedding(input_ids)  # Embed input_ids
+
+        # # Generate positions based on the current batch's sequence length
+        # positions = torch.arange(input_ids.size(1), device=input_ids.device).unsqueeze(
+        #     0
+        # )
+        # pos_embeddings = self.rope(positions)
+
+        # if self.lambda_factors is not None:
+        #     pos_embeddings = non_uniform_interpolation(
+        #         pos_embeddings, self.extension_ratio, self.lambda_factors, self.n_hat
+        #     )
+
+        #     # Ensure pos_embeddings has the same shape as input_embeddings
+        #     pos_embeddings = pos_embeddings[:, : input_embeddings.size(1), :]
+
+        #     print(f"input_embeddings shape: {input_embeddings.shape}")
+        #     print(f"pos_embeddings shape: {pos_embeddings.shape}")
+
+        #     embeddings = input_embeddings + pos_embeddings
+
+        #     for transformer in self.transformers:
+        #         embeddings = transformer(embeddings)
+
+        #     return embeddings
 
     def extend_context(self, data_path, target_length, max_sequence_length, tokenizer):
         """
