@@ -160,6 +160,7 @@ cython_debug/
 #.idea/
 
 .gz
+/data/
 /data/raw/*.gz
 .ipynb_checkpoints/
 *.pyc
