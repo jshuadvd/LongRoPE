@@ -40,14 +40,20 @@ def collate_fn(batch):
 
 def preprocess_data(data, tokenizer, max_length=1024):
     tokenized_data = tokenizer.encode(data)
-    sequences = [
-        tokenized_data[i : i + max_length]
-        for i in range(0, len(tokenized_data), max_length)
-    ]
-    targets = [
-        tokenized_data[i + 1 : i + max_length + 1]
-        for i in range(0, len(tokenized_data), max_length)
-    ]
+    sequences = []
+    targets = []
+
+    # Segment the tokenized data into chunks of max_length
+    for i in range(0, len(tokenized_data), max_length):
+        end = i + max_length
+        # Ensure not to exceed the length of tokenized_data
+        if end < len(tokenized_data):
+            sequences.append(tokenized_data[i:end])
+            targets.append(tokenized_data[i + 1 : end + 1])
+        else:
+            sequences.append(tokenized_data[i:])
+            targets.append(tokenized_data[i + 1 :] + [tokenizer.eos_token_id])
+
     return sequences, targets
 
 
