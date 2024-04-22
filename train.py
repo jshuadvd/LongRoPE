@@ -57,6 +57,19 @@ def preprocess_data(data, tokenizer, max_length=1024):
     return sequences, targets
 
 
+def create_sliding_window_chunks(tokenized_data, max_length=1024, overlap=100):
+    sequences = []
+    start = 0
+    while start + max_length < len(tokenized_data):
+        end = start + max_length
+        sequences.append(tokenized_data[start:end])
+        start = end - overlap  # Overlap to maintain context
+    # Add the last piece
+    if start < len(tokenized_data):
+        sequences.append(tokenized_data[start:])
+    return sequences
+
+
 def validate_targets(targets, vocab_size):
     for target_batch in targets:
         if any(t >= vocab_size for t in target_batch):
