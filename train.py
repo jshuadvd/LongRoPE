@@ -38,21 +38,20 @@ def collate_fn(batch):
     return padded_inputs, padded_targets
 
 
-def preprocess_data(data, tokenizer, max_length=1024):
+def preprocess_data(data, tokenizer, max_length=1024, overlap=100):
     tokenized_data = tokenizer.encode(data)
     sequences = []
     targets = []
 
-    # Segment the tokenized data into chunks of max_length
-    for i in range(0, len(tokenized_data), max_length):
+    step = max_length - overlap
+    for i in range(0, len(tokenized_data) - overlap, step):
         end = i + max_length
-        # Ensure not to exceed the length of tokenized_data
-        if end < len(tokenized_data):
-            sequences.append(tokenized_data[i:end])
-            targets.append(tokenized_data[i + 1 : end + 1])
-        else:
-            sequences.append(tokenized_data[i:])
-            targets.append(tokenized_data[i + 1 :] + [tokenizer.eos_token_id])
+        sequences.append(tokenized_data[i:end])
+        targets.append(
+            tokenized_data[i + 1 : end + 1]
+            if end < len(tokenized_data)
+            else tokenized_data[i + 1 :] + [tokenizer.eos_token_id]
+        )
 
     return sequences, targets
 
