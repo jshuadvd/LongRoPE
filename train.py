@@ -38,7 +38,7 @@ def collate_fn(batch):
     return padded_inputs, padded_targets
 
 
-def preprocess_data(data, tokenizer, max_length=1024, overlap=100):
+def preprocess_data(data, tokenizer, max_length=8192, overlap=512):
     tokenized_data = tokenizer.encode(data)
     sequences = []
     targets = []
@@ -56,14 +56,13 @@ def preprocess_data(data, tokenizer, max_length=1024, overlap=100):
     return sequences, targets
 
 
-def create_sliding_window_chunks(tokenized_data, max_length=1024, overlap=100):
+def create_sliding_window_chunks(tokenized_data, max_length=8192, overlap=512):
     sequences = []
     start = 0
     while start + max_length < len(tokenized_data):
         end = start + max_length
         sequences.append(tokenized_data[start:end])
-        start = end - overlap  # Overlap to maintain context
-    # Add the last piece
+        start = end - overlap
     if start < len(tokenized_data):
         sequences.append(tokenized_data[start:])
     return sequences
