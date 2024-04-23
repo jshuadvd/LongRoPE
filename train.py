@@ -78,20 +78,17 @@ def train(model, train_loader, val_loader, optimizer, criterion, device, epochs=
     model.train()
     for epoch in range(epochs):
         total_loss = 0
-        for batch in train_loader:
+        for i, batch in enumerate(train_loader):
             inputs, targets = batch
 
-            # Add the debugging print statement here
-            print(
-                f"Batch input shape: {inputs.shape}, Batch target max: {max(targets.view(-1))}"
-            )
+            # Ensure no input batch exceeds the maximum allowed sequence length
+            if inputs.shape[1] > 8192:
+                raise ValueError(
+                    f"Batch {i} has input length {inputs.shape[1]}, which exceeds 8192."
+                )
 
-            try:
-                inputs = inputs.to(device)
-                targets = targets.to(device)
-            except ValueError:
-                print("Error unpacking batch. Check the dataset loader.")
-                continue
+            inputs = inputs.to(device)
+            targets = targets.to(device)
 
             optimizer.zero_grad()
             outputs = model(inputs)
@@ -125,18 +122,34 @@ def train(model, train_loader, val_loader, optimizer, criterion, device, epochs=
 
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-    vocab_size = tokenizer.vocab_size  # Get the vocabulary size from the tokenizer
+    tokenizer = GPT2Tokenizer.from_pretrained("gpt2", add_special_tokens=False)
+    vocab_size = tokenizer.vocab_size
 
     # Load data
-    # data = load_data('../data/raw/enwik8.gz')
-    # Preprocess and segment data
-    sequences, targets = preprocess_data(
-        data, tokenizer
-    )  # Ensure sequences do not exceed 1024 tokens
+    data = load_data("../data/raw/enwik8.gz")
+    tokenized_data = tokenizer.encode(data)
+    print("Total length of tokenized data:", len(tokenized_data))  # Debugging line
+
+    # Create sliding window chunks
+    max_length = 8192
+    overlap = 512
+    sequences = create_sliding_window_chunks(tokenized_data, max_length, overlap)
+    print(
+        "Max sequence length after chunking:", max(len(seq) for seq in sequences)
+    )  # Debugging line
+    print("Number of sequences:", len(sequences))  # Debugging line
+
+    # Ensure all sequences are within the maximum allowed length
+    max_allowed_len = 8192  # or whatever your model's max_len is
+    sequences = [seq for seq in sequences if len(seq) <= max_allowed_len]
+    if any(len(seq) > max_allowed_len for seq in sequences):
+        print("Warning: Some sequences exceed the maximum allowed length.")
+
+    # Assuming a simple target creation where the target is the next token
+    targets = [seq[1:] + [tokenizer.eos_token_id] for seq in sequences]
 
     # Validate targets
-    validate_targets(targets, vocab_size)  # Corrected usage
+    validate_targets(targets, vocab_size)
 
     # Create dataset
     dataset = CustomDataset(sequences, targets)
@@ -152,15 +165,15 @@ def main():
     train_loader = DataLoader(
         train_dataset, batch_size=32, shuffle=True, collate_fn=collate_fn
     )
-    val_loader = DataLoader(val_dataset, batch_size=32)
+    val_loader = DataLoader(val_dataset, batch_size=32, collate_fn=collate_fn)
 
     # Initialize the model
-    adjusted_vocab_size = 130110  # max(target label) + 1
+    adjusted_vocab_size = vocab_size  # Adjusted to use the tokenizer's vocab size
     model = LongRoPEModel(
         d_model=1024,
         n_heads=16,
         num_layers=6,
-        max_len=4096,
+        max_len=max_length,  # Ensure this matches the max_length used for segmentation
         vocab_size=adjusted_vocab_size,
     ).to(device)
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
