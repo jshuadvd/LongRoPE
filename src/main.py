@@ -12,7 +12,7 @@ class RoPEPositionalEncoding(nn.Module):
     Rotary Position Encoding (RoPE) module.
     """
 
-    def __init__(self, d_model, max_len=5000, base=10000):
+    def __init__(self, d_model, max_len=1000000, base=10000):
         super().__init__()
         self.d_model = d_model
         self.max_len = max_len
