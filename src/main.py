@@ -162,7 +162,7 @@ class LongRoPEModel(nn.Module):
                 LongRoPEModel: Extended LongRoPE model.
     """
 
-    def __init__(self, d_model, n_heads, num_layers, vocab_size, max_len=5000):
+    def __init__(self, d_model, n_heads, num_layers, vocab_size, max_len=1000000):
         super().__init__()
         self.d_model = d_model
         self.num_layers = num_layers
