@@ -209,23 +209,23 @@ class LongRoPEModel(nn.Module):
 
     def forward(self, input_ids):
         input_embeddings = self.embedding(input_ids)
-        positions = torch.arange(input_ids.size(1), device=input_ids.device).unsqueeze(
-            0
-        )
+        seq_length = input_ids.size(1)
+        positions = torch.arange(seq_length, device=input_ids.device).unsqueeze(0)
         pos_embeddings = self.rope(positions)
 
-        if self.lambda_factors is not None:
+        if seq_length <= self.n_hat_base:
+            pos_embeddings = non_uniform_interpolation(
+                pos_embeddings,
+                self.extension_ratio,
+                self.lambda_factors_base,
+                self.n_hat_base,
+            )
+        elif self.lambda_factors is not None:
             pos_embeddings = non_uniform_interpolation(
                 pos_embeddings, self.extension_ratio, self.lambda_factors, self.n_hat
             )
 
-        # Ensure pos_embeddings has the same shape as input_embeddings
-        pos_embeddings = pos_embeddings[
-            :, : input_embeddings.size(1), : self.d_model
-        ]  # Adjust to match d_model
-
-        print(f"input_embeddings shape: {input_embeddings.shape}")
-        print(f"pos_embeddings shape: {pos_embeddings.shape}")
+        pos_embeddings = pos_embeddings[:, :seq_length, :]
 
         embeddings = input_embeddings + pos_embeddings
 
