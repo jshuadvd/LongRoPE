@@ -234,34 +234,40 @@ class LongRoPEModel(nn.Module):
 
         return embeddings
 
-    def extend_context(self, data_path, target_length, max_sequence_length, tokenizer):
-        """
-        Extend the context window of the model.
 
-        Args:
-            data_path (str): Path to the input data file.
-            target_length (int): Target context window length.
-            max_sequence_length (int): Maximum sequence length for input data.
-            tokenizer: Tokenizer object for encoding input data.
+def extend_context(self, data_path, target_length, max_sequence_length, tokenizer):
+    """
+    Extend the context window of the model.
 
-        Returns:
-            LongRoPEModel: Extended LongRoPE model.
-        """
-        if tokenizer is None:
-            raise ValueError("Tokenizer is required for extending context.")
+    Args:
+        data_path (str): Path to the input data file.
+        target_length (int): Target context window length.
+        max_sequence_length (int): Maximum sequence length for input data.
+        tokenizer: Tokenizer object for encoding input data.
 
-        self.extension_ratio = target_length / self.rope.max_len
+    Returns:
+        LongRoPEModel: Extended LongRoPE model.
+    """
+    if tokenizer is None:
+        raise ValueError("Tokenizer is required for extending context.")
 
-        data = load_data(data_path, tokenizer, max_sequence_length)
-        model, lambda_factors, lambda_factors_base = progressive_extension(
-            self, data, self.rope.max_len, target_length
-        )
+    self.extension_ratio = target_length / self.rope.max_len
 
-        self.lambda_factors = lambda_factors
-        self.lambda_factors_base = lambda_factors_base
-        self.n_hat = self.rope.max_len // 2
+    data = load_data(data_path, tokenizer, max_sequence_length)
+    (
+        model,
+        lambda_factors,
+        n_hat,
+        lambda_factors_base,
+        n_hat_base,
+    ) = progressive_extension(self, data, self.rope.max_len, target_length)
 
-        return model
+    self.lambda_factors = lambda_factors
+    self.lambda_factors_base = lambda_factors_base
+    self.n_hat = n_hat
+    self.n_hat_base = n_hat_base
+
+    return model
 
 
 def recover_short_context(self, data_path, max_sequence_length, tokenizer):
