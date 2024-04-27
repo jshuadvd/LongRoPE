@@ -118,6 +118,35 @@ def progressive_extension(model, data, base_length, target_length):
     return curr_model, lambda_factors, lambda_factors_base
 
 
+def short_context_recovery(model, data, base_length, lambda_factors_base, n_hat_base):
+    """
+    Recover performance on shorter context lengths.
+
+    Args:
+        model (nn.Module): LongRoPE model.
+        data (list): List of input sequences.
+        base_length (int): Base context window length.
+        lambda_factors_base (list): Base lambda factors.
+        n_hat_base (int): Base n_hat.
+
+    Returns:
+        nn.Module: Recovered LongRoPE model.
+    """
+    short_lengths = [base_length // 2, base_length // 4]
+
+    for length in short_lengths:
+        extension_ratio = length / base_length
+        lambda_factors, n_hat = search_lambda_factors(
+            model, data, extension_ratio, max_length=length
+        )
+        model = fine_tune(model, data, length, lambda_factors, n_hat)
+
+    model.lambda_factors_base = lambda_factors_base
+    model.n_hat_base = n_hat_base
+
+    return model
+
+
 class LongRoPEModel(nn.Module):
     """
     Long Range Rotary Position Encoding (LongRoPE) model.
