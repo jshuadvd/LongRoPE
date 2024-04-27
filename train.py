@@ -11,7 +11,6 @@ from src.main import (
     RoPEPositionalEncoding,
     short_context_recovery,
     progressive_extension,
-    load_data,
 )
 
 
