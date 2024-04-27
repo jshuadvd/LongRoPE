@@ -6,7 +6,13 @@ from torch.utils.data import DataLoader, Dataset
 from torch.nn.utils.rnn import pad_sequence
 import gzip
 from transformers import GPT2Tokenizer
-from src.main import LongRoPEModel, RoPEPositionalEncoding
+from src.main import (
+    LongRoPEModel,
+    RoPEPositionalEncoding,
+    short_context_recovery,
+    progressive_extension,
+    load_data,
+)
 
 
 class CustomDataset(Dataset):
@@ -51,7 +57,9 @@ def create_sliding_window_chunks(tokenized_data, max_length=8192, overlap=512):
         sequences.append(tokenized_data[start:end])
         start = end - overlap
     if start < len(tokenized_data):
-        sequences.append(tokenized_data[start:])
+        sequences.append(
+            tokenized_data[start : min(start + max_length, len(tokenized_data))]
+        )
     return sequences
 
 
@@ -73,17 +81,17 @@ def train(model, train_loader, val_loader, optimizer, criterion, device, epochs=
             print(f"Input shape: {inputs.shape}")
             print(f"Target shape: {targets.shape}")
 
-            if inputs.size(1) > 8192:
-                print(f"Error: Batch with input size {inputs.size(1)} exceeds 8192.")
-                continue  # Skip this batch or raise an error
+            if inputs.size(1) > model.rope.max_len:
+                print(
+                    f"Warning: Batch with input size {inputs.size(1)} exceeds the maximum length of {model.rope.max_len}."
+                )
+                continue  # Skip this batch
 
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = criterion(outputs.permute(0, 2, 1), targets)
             loss.backward()
             optimizer.step()
-
-            print(f"Model output features: {model.output_features}")
 
         # Validation step
         model.eval()
@@ -136,10 +144,23 @@ def main():
         max_len=8192,
     ).to(device)
 
-    optimizer = optim.Adam(model.parameters(), lr=1e-4)
+    extended_model = model.extend_context(
+        data_path="../data/raw/enwik8.gz",
+        target_length=16384,
+        max_sequence_length=8192,
+        tokenizer=tokenizer,
+    )
+
+    recovered_model = extended_model.recover_short_context(
+        data_path="../data/raw/enwik8.gz",
+        max_sequence_length=8192,
+        tokenizer=tokenizer,
+    )
+
+    optimizer = optim.Adam(recovered_model.parameters(), lr=1e-4)
     criterion = nn.CrossEntropyLoss()
 
-    train(model, train_loader, val_loader, optimizer, criterion, device)
+    train(recovered_model, train_loader, val_loader, optimizer, criterion, device)
 
 
 if __name__ == "__main__":
