@@ -4,7 +4,6 @@ import torch.optim as optim
 import random
 import numpy as np
 import gzip
-import io
 
 
 class RoPEPositionalEncoding(nn.Module):
@@ -54,97 +53,38 @@ def non_uniform_interpolation(pos_embed, extension_ratio, lambda_factors, n_hat)
     return interpolated_pos
 
 
-def search_lambda_factors(
-    model,
-    data,
-    extension_ratio,
-    population_size,
-    num_mutations,
-    num_crossovers,
-    max_iterations,
-):
+def load_data(data_path, tokenizer, max_sequence_length):
     """
-    Search for optimal lambda factors using evolutionary search.
+    Load and preprocess the input data.
 
     Args:
-        model (nn.Module): LongRoPE model.
-        data (list): List of input sequences.
-        extension_ratio (float): Extension ratio for context window.
-        population_size (int): Size of the population for evolutionary search.
-        num_mutations (int): Number of mutations per iteration.
-        num_crossovers (int): Number of crossovers per iteration.
-        max_iterations (int): Maximum number of iterations for evolutionary search.
+        data_path (str): Path to the input data file.
+        tokenizer: Tokenizer object for encoding input data.
+        max_sequence_length (int): Maximum sequence length for input data.
 
     Returns:
-        list: Optimal lambda factors found by the search.
+        list: List of preprocessed input sequences.
     """
-    population = initialize_population(population_size, extension_ratio)
+    if data_path is None or tokenizer is None:
+        raise ValueError("Data path and tokenizer are required for loading data.")
 
-    for i in range(max_iterations):
-        perplexities = evaluate_population(model, data, population)
-        parents = select_topk(population, perplexities, k=population_size // 2)
-        population = mutate(parents, num_mutations) + crossover(parents, num_crossovers)
+    if data_path.endswith(".gz"):
+        with gzip.open(data_path, "rt", encoding="utf-8") as file:
+            text_data = file.read()
+    else:
+        with open(data_path, "r", encoding="utf-8") as file:
+            text_data = file.read()
 
-    return min(population, key=lambda x: evaluate_individual(model, data, x))
+    tokenized_data = tokenizer.encode(text_data)
 
+    sequences = [
+        tokenized_data[i : i + max_sequence_length]
+        for i in range(0, len(tokenized_data), max_sequence_length)
+    ]
 
-def progressive_extension(model, data, base_length, target_length):
-    """
-    Progressively extend the context window of the model.
+    tensor_data = [torch.tensor(seq, dtype=torch.long) for seq in sequences]
 
-    Args:
-        model (nn.Module): LongRoPE model.
-        data (list): List of input sequences.
-        base_length (int): Base context window length.
-        target_length (int): Target context window length.
-
-    Returns:
-        tuple: (Extended model, lambda factors, n_hat, base lambda factors, base n_hat)
-    """
-    curr_model = model
-    curr_length = base_length
-
-    while curr_length < target_length:
-        lambda_factors, n_hat = search_lambda_factors(
-            curr_model, data, curr_length / base_length
-        )
-        curr_model = fine_tune(curr_model, data, curr_length, lambda_factors, n_hat)
-        curr_length *= 2
-
-    lambda_factors_base, n_hat_base = search_lambda_factors(
-        curr_model, data, curr_length / base_length, max_length=base_length
-    )
-
-    return curr_model, lambda_factors, n_hat, lambda_factors_base, n_hat_base
-
-
-def short_context_recovery(model, data, base_length, lambda_factors_base, n_hat_base):
-    """
-    Recover performance on shorter context lengths.
-
-    Args:
-        model (nn.Module): LongRoPE model.
-        data (list): List of input sequences.
-        base_length (int): Base context window length.
-        lambda_factors_base (list): Base lambda factors.
-        n_hat_base (int): Base n_hat.
-
-    Returns:
-        nn.Module: Recovered LongRoPE model.
-    """
-    short_lengths = [base_length // 2, base_length // 4]
-
-    for length in short_lengths:
-        extension_ratio = length / base_length
-        lambda_factors, n_hat = search_lambda_factors(
-            model, data, extension_ratio, max_length=length
-        )
-        model = fine_tune(model, data, length, lambda_factors, n_hat)
-
-    model.lambda_factors_base = lambda_factors_base
-    model.n_hat_base = n_hat_base
-
-    return model
+    return tensor_data
 
 
 class LongRoPEModel(nn.Module):
@@ -206,6 +146,8 @@ class LongRoPEModel(nn.Module):
         )
         self.lambda_factors = None
         self.lambda_factors_base = None
+        self.n_hat = None
+        self.n_hat_base = None
 
     def forward(self, input_ids):
         input_embeddings = self.embedding(input_ids)
@@ -234,97 +176,99 @@ class LongRoPEModel(nn.Module):
 
         return embeddings
 
+    def extend_context(self, data_path, target_length, max_sequence_length, tokenizer):
+        """
+        Extend the context window of the model.
 
-def extend_context(self, data_path, target_length, max_sequence_length, tokenizer):
+        Args:
+            data_path (str): Path to the input data file.
+            target_length (int): Target context window length.
+            max_sequence_length (int): Maximum sequence length for input data.
+            tokenizer: Tokenizer object for encoding input data.
+
+        Returns:
+            LongRoPEModel: Extended LongRoPE model.
+        """
+        if tokenizer is None:
+            raise ValueError("Tokenizer is required for extending context.")
+
+        self.extension_ratio = target_length / self.rope.max_len
+
+        data = load_data(data_path, tokenizer, max_sequence_length)
+        (
+            model,
+            lambda_factors,
+            n_hat,
+            lambda_factors_base,
+            n_hat_base,
+        ) = progressive_extension(self, data, self.rope.max_len, target_length)
+
+        self.lambda_factors = lambda_factors
+        self.lambda_factors_base = lambda_factors_base
+        self.n_hat = n_hat
+        self.n_hat_base = n_hat_base
+
+        return model
+
+    def recover_short_context(self, data_path, max_sequence_length, tokenizer):
+        """
+        Recover performance on shorter context lengths.
+
+        Args:
+            data_path (str): Path to the input data file.
+            max_sequence_length (int): Maximum sequence length for input data.
+            tokenizer: Tokenizer object for encoding input data.
+
+        Returns:
+            LongRoPEModel: Recovered LongRoPE model.
+        """
+        if tokenizer is None:
+            raise ValueError("Tokenizer is required for recovering short context.")
+
+        data = load_data(data_path, tokenizer, max_sequence_length)
+        model = short_context_recovery(
+            self, data, self.rope.max_len, self.lambda_factors_base, self.n_hat_base
+        )
+
+        return model
+
+
+def search_lambda_factors(
+    model,
+    data,
+    extension_ratio,
+    population_size,
+    num_mutations,
+    num_crossovers,
+    max_iterations,
+):
     """
-    Extend the context window of the model.
+    Search for optimal lambda factors using evolutionary search.
 
     Args:
-        data_path (str): Path to the input data file.
-        target_length (int): Target context window length.
-        max_sequence_length (int): Maximum sequence length for input data.
-        tokenizer: Tokenizer object for encoding input data.
+        model (nn.Module): LongRoPE model.
+        data (list): List of input sequences.
+        extension_ratio (float): Extension ratio for context window.
+        population_size (int): Size of the population for evolutionary search.
+        num_mutations (int): Number of mutations per iteration.
+        num_crossovers (int): Number of crossovers per iteration.
+        max_iterations (int): Maximum number of iterations for evolutionary search.
 
     Returns:
-        LongRoPEModel: Extended LongRoPE model.
+        tuple: (Best lambda factors, best n_hat)
     """
-    if tokenizer is None:
-        raise ValueError("Tokenizer is required for extending context.")
+    population = initialize_population(population_size, extension_ratio)
 
-    self.extension_ratio = target_length / self.rope.max_len
+    for i in range(max_iterations):
+        perplexities = evaluate_population(model, data, population)
+        parents = select_topk(population, perplexities, k=population_size // 2)
+        population = mutate(parents, num_mutations) + crossover(parents, num_crossovers)
 
-    data = load_data(data_path, tokenizer, max_sequence_length)
-    (
-        model,
-        lambda_factors,
-        n_hat,
-        lambda_factors_base,
-        n_hat_base,
-    ) = progressive_extension(self, data, self.rope.max_len, target_length)
-
-    self.lambda_factors = lambda_factors
-    self.lambda_factors_base = lambda_factors_base
-    self.n_hat = n_hat
-    self.n_hat_base = n_hat_base
-
-    return model
-
-
-def recover_short_context(self, data_path, max_sequence_length, tokenizer):
-    """
-    Recover performance on shorter context lengths.
-
-    Args:
-        data_path (str): Path to the input data file.
-        max_sequence_length (int): Maximum sequence length for input data.
-        tokenizer: Tokenizer object for encoding input data.
-
-    Returns:
-        LongRoPEModel: Recovered LongRoPE model.
-    """
-    if tokenizer is None:
-        raise ValueError("Tokenizer is required for recovering short context.")
-
-    data = load_data(data_path, tokenizer, max_sequence_length)
-    model = short_context_recovery(
-        self, data, self.rope.max_len, self.lambda_factors_base, self.n_hat_base
+    best_lambda_factors, best_n_hat = min(
+        population, key=lambda x: evaluate_individual(model, data, x)
     )
 
-    return model
-
-
-def load_data(data_path, tokenizer, max_sequence_length):
-    """
-    Load and preprocess the input data.
-
-    Args:
-        data_path (str): Path to the input data file.
-        tokenizer: Tokenizer object for encoding input data.
-        max_sequence_length (int): Maximum sequence length for input data.
-
-    Returns:
-        list: List of preprocessed input sequences.
-    """
-    if data_path is None or tokenizer is None:
-        raise ValueError("Data path and tokenizer are required for loading data.")
-
-    if data_path.endswith(".gz"):
-        with gzip.open(data_path, "rt", encoding="utf-8") as file:
-            text_data = file.read()
-    else:
-        with open(data_path, "r", encoding="utf-8") as file:
-            text_data = file.read()
-
-    tokenized_data = tokenizer.encode(text_data)
-
-    sequences = [
-        tokenized_data[i : i + max_sequence_length]
-        for i in range(0, len(tokenized_data), max_sequence_length)
-    ]
-
-    tensor_data = [torch.tensor(seq, dtype=torch.long) for seq in sequences]
-
-    return tensor_data
+    return best_lambda_factors, best_n_hat
 
 
 def initialize_population(population_size, extension_ratio):
@@ -340,23 +284,10 @@ def initialize_population(population_size, extension_ratio):
     """
     population = []
 
-    population.append(torch.ones(512) * extension_ratio)
-
-    ntk_factors = torch.tensor([extension_ratio ** (2 * i / 512) for i in range(512)])
-    population.append(ntk_factors)
-
-    yarn_factors = torch.ones(512)
-    yarn_factors[:128] = 1.0
-    yarn_factors[128:256] = extension_ratio ** (1 / 3)
-    yarn_factors[256:] = extension_ratio
-    population.append(yarn_factors)
-
-    for _ in range(population_size - 3):
-        factors = torch.ones(512)
-        for i in range(512):
-            if random.random() < 0.1:
-                factors[i] = random.uniform(1, extension_ratio)
-        population.append(factors)
+    for _ in range(population_size):
+        lambda_factors = torch.FloatTensor(512).uniform_(1.0, extension_ratio)
+        n_hat = random.randint(0, 512)
+        population.append((lambda_factors, n_hat))
 
     return population
 
@@ -368,14 +299,16 @@ def evaluate_individual(model, data, individual):
     Args:
         model (nn.Module): LongRoPE model.
         data (list): List of input sequences.
-        individual (list): Lambda factor configuration.
+        individual (tuple): Lambda factor configuration and n_hat.
 
     Returns:
         float: Perplexity score for the individual.
     """
-    model.lambda_factors = individual
-    perplexities = []
+    lambda_factors, n_hat = individual
+    model.lambda_factors = lambda_factors
+    model.n_hat = n_hat
 
+    perplexities = []
     for seq in data:
         input_ids = seq.unsqueeze(0)
         output = model(input_ids)
@@ -433,12 +366,19 @@ def mutate(parents, num_mutations):
     """
     mutated_population = []
     for _ in range(num_mutations):
-        parent = random.choice(parents)
-        child = parent.clone()
+        parent_lambda, parent_n_hat = random.choice(parents)
+        child_lambda = parent_lambda.clone()
+        child_n_hat = parent_n_hat
+
         for i in range(512):
             if random.random() < 0.1:
-                child[i] *= random.uniform(0.8, 1.2)
-        mutated_population.append(child)
+                child_lambda[i] *= random.uniform(0.8, 1.2)
+
+        if random.random() < 0.1:
+            child_n_hat = random.randint(0, 512)
+
+        mutated_population.append((child_lambda, child_n_hat))
+
     return mutated_population
 
 
@@ -455,12 +395,20 @@ def crossover(parents, num_crossovers):
     """
     crossover_population = []
     for _ in range(num_crossovers):
-        parent1, parent2 = random.sample(parents, 2)
-        child = parent1.clone()
+        parent1_lambda, parent1_n_hat = random.choice(parents)
+        parent2_lambda, parent2_n_hat = random.choice(parents)
+        child_lambda = parent1_lambda.clone()
+        child_n_hat = parent1_n_hat
+
         for i in range(512):
             if random.random() < 0.5:
-                child[i] = parent2[i]
-        crossover_population.append(child)
+                child_lambda[i] = parent2_lambda[i]
+
+        if random.random() < 0.5:
+            child_n_hat = parent2_n_hat
+
+        crossover_population.append((child_lambda, child_n_hat))
+
     return crossover_population
 
 
@@ -499,5 +447,62 @@ def fine_tune(model, data, target_length, lambda_factors, n_hat, num_epochs=3):
 
             loss.backward()
             optimizer.step()
+
+    return model
+
+
+def progressive_extension(model, data, base_length, target_length):
+    """
+    Progressively extend the context window of the model.
+    Args:
+        model (nn.Module): LongRoPE model.
+        data (list): List of input sequences.
+        base_length (int): Base context window length.
+        target_length (int): Target context window length.
+
+    Returns:
+        tuple: (Extended model, lambda factors, n_hat, base lambda factors, base n_hat)
+    """
+    curr_model = model
+    curr_length = base_length
+
+    while curr_length < target_length:
+        lambda_factors, n_hat = search_lambda_factors(
+            curr_model, data, curr_length / base_length
+        )
+        curr_model = fine_tune(curr_model, data, curr_length, lambda_factors, n_hat)
+        curr_length *= 2
+
+    lambda_factors_base, n_hat_base = search_lambda_factors(
+        curr_model, data, curr_length / base_length, max_length=base_length
+    )
+
+    return curr_model, lambda_factors, n_hat, lambda_factors_base, n_hat_base
+
+
+def short_context_recovery(model, data, base_length, lambda_factors_base, n_hat_base):
+    """
+    Recover performance on shorter context lengths.
+    Args:
+        model (nn.Module): LongRoPE model.
+        data (list): List of input sequences.
+        base_length (int): Base context window length.
+        lambda_factors_base (list): Base lambda factors.
+        n_hat_base (int): Base n_hat.
+
+    Returns:
+        nn.Module: Recovered LongRoPE model.
+    """
+    short_lengths = [base_length // 2, base_length // 4]
+
+    for length in short_lengths:
+        extension_ratio = length / base_length
+        lambda_factors, n_hat = search_lambda_factors(
+            model, data, extension_ratio, max_length=length
+        )
+        model = fine_tune(model, data, length, lambda_factors, n_hat)
+
+    model.lambda_factors_base = lambda_factors_base
+    model.n_hat_base = n_hat_base
 
     return model

@@ -6,12 +6,7 @@ from torch.utils.data import DataLoader, Dataset
 from torch.nn.utils.rnn import pad_sequence
 import gzip
 from transformers import GPT2Tokenizer
-from src.main import (
-    LongRoPEModel,
-    RoPEPositionalEncoding,
-    short_context_recovery,
-    progressive_extension,
-)
+from src.main import LongRoPEModel
 
 
 class CustomDataset(Dataset):
