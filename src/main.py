@@ -264,6 +264,29 @@ class LongRoPEModel(nn.Module):
         return model
 
 
+def recover_short_context(self, data_path, max_sequence_length, tokenizer):
+    """
+    Recover performance on shorter context lengths.
+
+    Args:
+        data_path (str): Path to the input data file.
+        max_sequence_length (int): Maximum sequence length for input data.
+        tokenizer: Tokenizer object for encoding input data.
+
+    Returns:
+        LongRoPEModel: Recovered LongRoPE model.
+    """
+    if tokenizer is None:
+        raise ValueError("Tokenizer is required for recovering short context.")
+
+    data = load_data(data_path, tokenizer, max_sequence_length)
+    model = short_context_recovery(
+        self, data, self.rope.max_len, self.lambda_factors_base, self.n_hat_base
+    )
+
+    return model
+
+
 def load_data(data_path, tokenizer, max_sequence_length):
     """
     Load and preprocess the input data.
