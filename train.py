@@ -68,6 +68,10 @@ def train(model, train_loader, val_loader, optimizer, criterion, device, epochs=
     for epoch in range(epochs):
         for inputs, targets in train_loader:
             inputs, targets = inputs.to(device), targets.to(device)
+
+            print(f"Input shape: {inputs.shape}")
+            print(f"Target shape: {targets.shape}")
+
             if inputs.size(1) > 8192:
                 print(f"Error: Batch with input size {inputs.size(1)} exceeds 8192.")
                 continue  # Skip this batch or raise an error
@@ -77,6 +81,8 @@ def train(model, train_loader, val_loader, optimizer, criterion, device, epochs=
             loss = criterion(outputs.permute(0, 2, 1), targets)
             loss.backward()
             optimizer.step()
+
+            print(f"Model output features: {model.output_features}")
 
         # Validation step
         model.eval()
@@ -103,7 +109,11 @@ def main():
     )
 
     targets = [seq[1:] + [tokenizer.eos_token_id] for seq in sequences]
+
     validate_targets(targets, tokenizer.vocab_size)
+
+    print(f"Validated: {validate_targets(targets, tokenizer.vocab_size)}")
+
     dataset = CustomDataset(sequences, targets)
     train_size = int(0.8 * len(dataset))
     val_size = len(dataset) - train_size
