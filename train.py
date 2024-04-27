@@ -60,6 +60,7 @@ def validate_targets(targets, vocab_size):
     for target_batch in targets:
         if any(t >= vocab_size for t in target_batch):
             raise ValueError("Target index out of vocabulary size range.")
+    print("All targets are within the vocabulary size.")
 
 
 def train(model, train_loader, val_loader, optimizer, criterion, device, epochs=10):
