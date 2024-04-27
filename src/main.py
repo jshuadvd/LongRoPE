@@ -99,7 +99,7 @@ def progressive_extension(model, data, base_length, target_length):
         target_length (int): Target context window length.
 
     Returns:
-        tuple: (Extended model, lambda factors, base lambda factors)
+        tuple: (Extended model, lambda factors, n_hat, base lambda factors, base n_hat)
     """
     curr_model = model
     curr_length = base_length
@@ -111,11 +111,11 @@ def progressive_extension(model, data, base_length, target_length):
         curr_model = fine_tune(curr_model, data, curr_length, lambda_factors, n_hat)
         curr_length *= 2
 
-    lambda_factors_base, _ = search_lambda_factors(
+    lambda_factors_base, n_hat_base = search_lambda_factors(
         curr_model, data, curr_length / base_length, max_length=base_length
     )
 
-    return curr_model, lambda_factors, lambda_factors_base
+    return curr_model, lambda_factors, n_hat, lambda_factors_base, n_hat_base
 
 
 def short_context_recovery(model, data, base_length, lambda_factors_base, n_hat_base):
