@@ -48,7 +48,8 @@ def non_uniform_interpolation(pos_embed, extension_ratio, lambda_factors, n_hat)
             mask, torch.ones_like(pos_embed[..., 0]), 1 / lambda_factors[i]
         )
         interpolated_pos[..., i * 2] *= scale
-        interpolated_pos[..., i * 2 + 1] *= scale
+        if i * 2 + 1 < d_model:  # Check if the index is within bounds
+            interpolated_pos[..., i * 2 + 1] *= scale
 
     return interpolated_pos
 
@@ -135,8 +136,8 @@ class LongRoPEModel(nn.Module):
         super().__init__()
         self.d_model = d_model
         self.num_layers = num_layers
-        self.vocab_size = vocab_size  # Add vocab_size to the parameters
-        self.embedding = nn.Embedding(vocab_size, d_model)  # Embedding layer
+        self.vocab_size = vocab_size
+        self.embedding = nn.Embedding(vocab_size, d_model)
         self.rope = RoPEPositionalEncoding(d_model, max_len)
         self.transformers = nn.ModuleList(
             [
@@ -147,7 +148,7 @@ class LongRoPEModel(nn.Module):
         self.lambda_factors = None
         self.lambda_factors_base = None
         self.n_hat = None
-        self.n_hat_base = None
+        self.n_hat_base = 0  # Initialize n_hat_base with a default value
 
     def forward(self, input_ids):
         input_embeddings = self.embedding(input_ids)
@@ -166,6 +167,12 @@ class LongRoPEModel(nn.Module):
             pos_embeddings = non_uniform_interpolation(
                 pos_embeddings, self.extension_ratio, self.lambda_factors, self.n_hat
             )
+
+        if seq_length > self.rope.max_len:
+            # Truncate the position embeddings if the sequence length exceeds the maximum length
+            pos_embeddings = pos_embeddings[:, : self.rope.max_len, :]
+            input_embeddings = input_embeddings[:, : self.rope.max_len, :]
+            seq_length = self.rope.max_len
 
         pos_embeddings = pos_embeddings[:, :seq_length, :]
 

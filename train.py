@@ -6,9 +6,14 @@ from torch.utils.data import DataLoader, Dataset
 from torch.nn.utils.rnn import pad_sequence
 import gzip
 from transformers import GPT2Tokenizer
+from importlib import reload
+import src.main
+
+reload(src.main)
 from src.main import LongRoPEModel
 
 
+# %%
 class CustomDataset(Dataset):
     """Custom dataset for handling sequences and targets."""
 
@@ -62,7 +67,7 @@ def validate_targets(targets, vocab_size):
     for target_batch in targets:
         if any(t >= vocab_size for t in target_batch):
             raise ValueError("Target index out of vocabulary size range.")
-    print("All targets are within the vocabulary size.")
+    return True
 
 
 def train(model, train_loader, val_loader, optimizer, criterion, device, epochs=10):
@@ -102,9 +107,13 @@ def train(model, train_loader, val_loader, optimizer, criterion, device, epochs=
         model.train()
 
 
+# %%
 def main():
     """Main function to setup and run training."""
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    tokenizer.model_max_length = (
+        8192  # Set the maximum sequence length for the tokenizer
+    )
     data = load_data("../data/raw/enwik8.gz")
     tokenized_data = tokenizer.encode(data)
     sequences = create_sliding_window_chunks(
@@ -130,22 +139,28 @@ def main():
     val_loader = DataLoader(val_dataset, batch_size=32, collate_fn=collate_fn)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     model = LongRoPEModel(
-        d_model=1024,
-        n_heads=16,
+        d_model=2048,
+        n_heads=32,
         num_layers=6,
         vocab_size=tokenizer.vocab_size,
         max_len=8192,
     ).to(device)
+    # print(f"Model output features: {model.output_features}")
 
     extended_model = model.extend_context(
         data_path="../data/raw/enwik8.gz",
         target_length=16384,
         max_sequence_length=8192,
         tokenizer=tokenizer,
+        population_size=64,
+        num_mutations=16,
+        num_crossovers=16,
+        max_iterations=10,
     )
 
-    recovered_model = extended_model.recover_short_context(
+    recovered_model = model.recover_short_context(
         data_path="../data/raw/enwik8.gz",
         max_sequence_length=8192,
         tokenizer=tokenizer,
