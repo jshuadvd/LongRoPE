@@ -176,7 +176,17 @@ class LongRoPEModel(nn.Module):
 
         return embeddings
 
-    def extend_context(self, data_path, target_length, max_sequence_length, tokenizer):
+    def extend_context(
+        self,
+        data_path,
+        target_length,
+        max_sequence_length,
+        tokenizer,
+        population_size,
+        num_mutations,
+        num_crossovers,
+        max_iterations,
+    ):
         """
         Extend the context window of the model.
 
@@ -185,6 +195,10 @@ class LongRoPEModel(nn.Module):
             target_length (int): Target context window length.
             max_sequence_length (int): Maximum sequence length for input data.
             tokenizer: Tokenizer object for encoding input data.
+            population_size (int): Size of the population for evolutionary search.
+            num_mutations (int): Number of mutations per iteration.
+            num_crossovers (int): Number of crossovers per iteration.
+            max_iterations (int): Maximum number of iterations for evolutionary search.
 
         Returns:
             LongRoPEModel: Extended LongRoPE model.
@@ -201,7 +215,16 @@ class LongRoPEModel(nn.Module):
             n_hat,
             lambda_factors_base,
             n_hat_base,
-        ) = progressive_extension(self, data, self.rope.max_len, target_length)
+        ) = progressive_extension(
+            self,
+            data,
+            self.rope.max_len,
+            target_length,
+            population_size,
+            num_mutations,
+            num_crossovers,
+            max_iterations,
+        )
 
         self.lambda_factors = lambda_factors
         self.lambda_factors_base = lambda_factors_base
@@ -451,14 +474,28 @@ def fine_tune(model, data, target_length, lambda_factors, n_hat, num_epochs=3):
     return model
 
 
-def progressive_extension(model, data, base_length, target_length):
+def progressive_extension(
+    model,
+    data,
+    base_length,
+    target_length,
+    population_size,
+    num_mutations,
+    num_crossovers,
+    max_iterations,
+):
     """
     Progressively extend the context window of the model.
+
     Args:
         model (nn.Module): LongRoPE model.
         data (list): List of input sequences.
         base_length (int): Base context window length.
         target_length (int): Target context window length.
+        population_size (int): Size of the population for evolutionary search.
+        num_mutations (int): Number of mutations per iteration.
+        num_crossovers (int): Number of crossovers per iteration.
+        max_iterations (int): Maximum number of iterations for evolutionary search.
 
     Returns:
         tuple: (Extended model, lambda factors, n_hat, base lambda factors, base n_hat)
@@ -468,13 +505,26 @@ def progressive_extension(model, data, base_length, target_length):
 
     while curr_length < target_length:
         lambda_factors, n_hat = search_lambda_factors(
-            curr_model, data, curr_length / base_length
+            curr_model,
+            data,
+            curr_length / base_length,
+            population_size,
+            num_mutations,
+            num_crossovers,
+            max_iterations,
         )
         curr_model = fine_tune(curr_model, data, curr_length, lambda_factors, n_hat)
         curr_length *= 2
 
     lambda_factors_base, n_hat_base = search_lambda_factors(
-        curr_model, data, curr_length / base_length, max_length=base_length
+        curr_model,
+        data,
+        curr_length / base_length,
+        population_size,
+        num_mutations,
+        num_crossovers,
+        max_iterations,
+        max_length=base_length,
     )
 
     return curr_model, lambda_factors, n_hat, lambda_factors_base, n_hat_base
