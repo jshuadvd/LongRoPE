@@ -535,7 +535,6 @@ def progressive_extension(
         num_mutations,
         num_crossovers,
         max_iterations,
-        max_length=base_length,
     )
 
     return curr_model, lambda_factors, n_hat, lambda_factors_base, n_hat_base
