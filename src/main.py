@@ -301,13 +301,14 @@ def search_lambda_factors(
     return best_lambda_factors, best_n_hat
 
 
-def initialize_population(population_size, extension_ratio):
+def initialize_population(population_size, extension_ratio, d_model):
     """
     Initialize the population for evolutionary search.
 
     Args:
         population_size (int): Size of the population.
         extension_ratio (float): Extension ratio for context window.
+        d_model (int): Dimension of the model.
 
     Returns:
         list: Initialized population.
@@ -315,8 +316,8 @@ def initialize_population(population_size, extension_ratio):
     population = []
 
     for _ in range(population_size):
-        lambda_factors = torch.FloatTensor(512).uniform_(1.0, extension_ratio)
-        n_hat = random.randint(0, 512)
+        lambda_factors = torch.FloatTensor(d_model).uniform_(1.0, extension_ratio)
+        n_hat = random.randint(0, d_model)
         population.append((lambda_factors, n_hat))
 
     return population
