@@ -287,7 +287,7 @@ def search_lambda_factors(
     Returns:
         tuple: (Best lambda factors, best n_hat)
     """
-    population = initialize_population(population_size, extension_ratio)
+    population = initialize_population(population_size, extension_ratio, model.d_model)
 
     for i in range(max_iterations):
         perplexities = evaluate_population(model, data, population)
