@@ -174,7 +174,8 @@ class LongRoPEModel(nn.Module):
             input_embeddings = input_embeddings[:, : self.rope.max_len, :]
             seq_length = self.rope.max_len
 
-        pos_embeddings = pos_embeddings[:, :seq_length, :]
+        # Ensure that pos_embeddings has the same shape as input_embeddings
+        pos_embeddings = pos_embeddings[:, :seq_length, : self.d_model]
 
         embeddings = input_embeddings + pos_embeddings
 
