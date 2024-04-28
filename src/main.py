@@ -384,13 +384,14 @@ def select_topk(population, perplexities, k):
     return [population[i] for i in indices]
 
 
-def mutate(parents, num_mutations):
+def mutate(parents, num_mutations, d_model):
     """
     Perform mutation on the parent population.
 
     Args:
         parents (list): Parent population.
         num_mutations (int): Number of mutations to perform.
+        d_model (int): Dimension of the model.
 
     Returns:
         list: Mutated population.
@@ -401,25 +402,26 @@ def mutate(parents, num_mutations):
         child_lambda = parent_lambda.clone()
         child_n_hat = parent_n_hat
 
-        for i in range(512):
+        for i in range(d_model):
             if random.random() < 0.1:
                 child_lambda[i] *= random.uniform(0.8, 1.2)
 
         if random.random() < 0.1:
-            child_n_hat = random.randint(0, 512)
+            child_n_hat = random.randint(0, d_model)
 
         mutated_population.append((child_lambda, child_n_hat))
 
     return mutated_population
 
 
-def crossover(parents, num_crossovers):
+def crossover(parents, num_crossovers, d_model):
     """
     Perform crossover on the parent population.
 
     Args:
         parents (list): Parent population.
         num_crossovers (int): Number of crossovers to perform.
+        d_model (int): Dimension of the model.
 
     Returns:
         list: Crossover population.
@@ -431,7 +433,7 @@ def crossover(parents, num_crossovers):
         child_lambda = parent1_lambda.clone()
         child_n_hat = parent1_n_hat
 
-        for i in range(512):
+        for i in range(d_model):
             if random.random() < 0.5:
                 child_lambda[i] = parent2_lambda[i]
 
