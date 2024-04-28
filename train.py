@@ -47,18 +47,34 @@ def collate_fn(batch):
     return padded_inputs, padded_targets
 
 
-def create_sliding_window_chunks(tokenized_data, max_length=8192, overlap=512):
+# def create_sliding_window_chunks(tokenized_data, max_length=8192, overlap=512):
+#     """Create sliding window chunks from tokenized data."""
+#     sequences = []
+#     start = 0
+#     while start + max_length < len(tokenized_data):
+#         end = start + max_length
+#         sequences.append(tokenized_data[start:end])
+#         start = end - overlap
+#     if start < len(tokenized_data):
+#         sequences.append(tokenized_data[start:min(start + max_length, len(tokenized_data))])
+#     return sequences
+
+
+def create_sliding_window_chunks(tokenized_data, max_length=65536, overlap=4096):
     """Create sliding window chunks from tokenized data."""
     sequences = []
     start = 0
-    while start + max_length < len(tokenized_data):
+    while start < len(tokenized_data):
         end = start + max_length
-        sequences.append(tokenized_data[start:end])
-        start = end - overlap
-    if start < len(tokenized_data):
-        sequences.append(
-            tokenized_data[start : min(start + max_length, len(tokenized_data))]
-        )
+        if end >= len(tokenized_data):
+            # If the remaining sequence is shorter than max_length, append it as is
+            sequences.append(tokenized_data[start:])
+        else:
+            # Split the sequence into chunks of max_length with overlap
+            while start < end:
+                chunk_end = min(start + max_length, end)
+                sequences.append(tokenized_data[start:chunk_end])
+                start += max_length - overlap
     return sequences
 
 
@@ -68,6 +84,37 @@ def validate_targets(targets, vocab_size):
         if any(t >= vocab_size for t in target_batch):
             raise ValueError("Target index out of vocabulary size range.")
     return True
+
+
+def preprocess_data(data, tokenizer, max_length, overlap):
+    """
+    Preprocess the input data by tokenizing it in chunks and creating sliding window sequences.
+
+    Args:
+        data (str): Input data as a string.
+        tokenizer: Tokenizer object for encoding the data.
+        max_length (int): Maximum sequence length for each chunk.
+        overlap (int): Overlap size between consecutive chunks.
+
+    Returns:
+        list: List of preprocessed sequences.
+    """
+    sequences = []
+    start = 0
+    while start < len(data):
+        end = start + max_length
+        chunk = data[start:end]
+        tokenized_chunk = tokenizer.encode(chunk)
+
+        # Create sliding window sequences from the tokenized chunk
+        chunk_sequences = create_sliding_window_chunks(
+            tokenized_chunk, max_length=max_length, overlap=overlap
+        )
+        sequences.extend(chunk_sequences)
+
+        start = end - overlap
+
+    return sequences
 
 
 def train(model, train_loader, val_loader, optimizer, criterion, device, epochs=10):
@@ -112,13 +159,13 @@ def main():
     """Main function to setup and run training."""
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     tokenizer.model_max_length = (
-        8192  # Set the maximum sequence length for the tokenizer
+        2048000  # Set the maximum sequence length for the tokenizer
     )
     data = load_data("../data/raw/enwik8.gz")
-    tokenized_data = tokenizer.encode(data)
-    sequences = create_sliding_window_chunks(
-        tokenized_data, max_length=8192, overlap=512
-    )
+
+    max_length = 65536
+    overlap = 4096
+    sequences = preprocess_data(data, tokenizer, max_length, overlap)
 
     targets = [seq[1:] + [tokenizer.eos_token_id] for seq in sequences]
 
@@ -141,18 +188,17 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model = LongRoPEModel(
-        d_model=2048,
+        d_model=4096,
         n_heads=32,
         num_layers=6,
         vocab_size=tokenizer.vocab_size,
-        max_len=8192,
+        max_len=2048000,  # Set max_len to 2048k tokens
     ).to(device)
-    # print(f"Model output features: {model.output_features}")
 
     extended_model = model.extend_context(
         data_path="../data/raw/enwik8.gz",
-        target_length=16384,
-        max_sequence_length=8192,
+        target_length=2048000,  # Set target_length to 2048k tokens
+        max_sequence_length=65536,
         tokenizer=tokenizer,
         population_size=64,
         num_mutations=16,
@@ -162,14 +208,14 @@ def main():
 
     recovered_model = model.recover_short_context(
         data_path="../data/raw/enwik8.gz",
-        max_sequence_length=8192,
+        max_sequence_length=48192,
         tokenizer=tokenizer,
     )
 
     optimizer = optim.Adam(recovered_model.parameters(), lr=1e-4)
     criterion = nn.CrossEntropyLoss()
 
-    train(recovered_model, train_loader, val_loader, optimizer, criterion, device)
+    # train(recovered_model, train_loader, val_loader, optimizer, criterion, device)
 
 
 if __name__ == "__main__":
