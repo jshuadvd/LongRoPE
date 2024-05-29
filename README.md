@@ -91,6 +91,15 @@ The architecture incorporates several structural modifications to handle the inc
 
 - **Attention Mechanisms**: Enhanced attention mechanisms are integrated to ensure that the model can focus on relevant parts of the input sequence, even with the extended context.
 
+
+### Performance and Applications
+
+
+Experiments demonstrate that LongRoPE maintains low perplexity across evaluation lengths from 4k to 2048k tokens and achieves high accuracy in tasks requiring long contexts. This makes it suitable for various applications, including in-context learning, long document summarization, and few-shot learning.
+
+
+For more detailed information, please refer to the full paper [here](https://arxiv.org/pdf/2402.13753.pdf).
+
 ## Implementation Highlights
 
 Insights into the coding and operational specifics that enable LongRoPE's functionality. This may include snippets or pseudocode illustrating key components.
