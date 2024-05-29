@@ -1,7 +1,5 @@
 # LongRoPE: Extending LLM Context Window Beyond 2 Million Tokens
 
----
-
 ## Introduction
 
 The paper introduces LongRoPE, a method to extend the context window of large language models (LLMs) beyond 2 million tokens.
