@@ -1,4 +1,5 @@
 # Train a LongRoPE model on a given dataset
+# %%
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -45,19 +46,6 @@ def collate_fn(batch):
         [torch.tensor(tgt) for tgt in targets], batch_first=True, padding_value=-1
     )
     return padded_inputs, padded_targets
-
-
-# def create_sliding_window_chunks(tokenized_data, max_length=8192, overlap=512):
-#     """Create sliding window chunks from tokenized data."""
-#     sequences = []
-#     start = 0
-#     while start + max_length < len(tokenized_data):
-#         end = start + max_length
-#         sequences.append(tokenized_data[start:end])
-#         start = end - overlap
-#     if start < len(tokenized_data):
-#         sequences.append(tokenized_data[start:min(start + max_length, len(tokenized_data))])
-#     return sequences
 
 
 def create_sliding_window_chunks(tokenized_data, max_length=65536, overlap=4096):

@@ -68,7 +68,17 @@ print(output.shape)  # Expected shape: (batch_size, target_length, d_model)
 
 ## Model Architecture
 
-An in-depth look at the structural modifications and their implications for model performance. This section would ideally cover the technical design and the rationale behind each decision.
+An in-depth look at the structural modifications and their implications for model performance.
+
+The **LongRoPE** model architecture is designed to extend the context window of large language models (LLMs) to over 2 million tokens, addressing the limitations of traditional Transformer architectures. The key innovation lies in the progressive extension strategy and the adjustment of positional embeddings.
+
+### Progressive Extension Strategy
+
+The architecture begins with a pre-trained LLM and extends its context window incrementally. Initially, the model is fine-tuned to handle a context length of 256k tokens. This progressive approach avoids the need for direct fine-tuning on extremely long texts, which are rare and computationally expensive to process. By gradually increasing the context length, the model can adapt more effectively to longer sequences.
+
+#### Positional Embeddings Adjustment
+
+To maintain performance across varying context lengths, LongRoPE adjusts the Rotary Positional Embeddings (RoPE). The model identifies and exploits non-uniformities in positional embeddings to minimize information loss during interpolation. This allows for an 8x context extension without the need for fine-tuning. Additionally, the model employs a search algorithm to find optimal rescale factors for shorter contexts (e.g., 4k and 8k tokens) on the 256k fine-tuned LLM. These adjustments ensure that the model retains high performance even within the original context window size.
 
 ## Implementation Highlights
 
