@@ -85,6 +85,10 @@ To maintain performance across varying context lengths, LongRoPE adjusts the Rot
 
 The architecture incorporates several structural modifications to handle the increased context length efficiently:
 
+- **Layer Scaling**: Adjustments are made to the scaling of layers to ensure stability and performance as the context window grows.
+
+- **Memory Management**: Efficient memory management techniques are employed to handle the large context sizes without overwhelming the system resources.
+
 ## Implementation Highlights
 
 Insights into the coding and operational specifics that enable LongRoPE's functionality. This may include snippets or pseudocode illustrating key components.
