@@ -1,6 +1,6 @@
 # LongRoPE: Extending LLM Context Window Beyond 2 Million Tokens
 
-_Note: This repository is a work in progress and is not yet ready for production use. Please refer to the paper for more details._
+---
 
 ## Introduction
 
@@ -116,3 +116,5 @@ For more detailed information, please refer to the [paper](https://arxiv.org/pdf
   year={2024}
 }
 ```
+
+_Note: This repository is a work in progress and is not yet ready for production use. Please refer to the paper for more details._
