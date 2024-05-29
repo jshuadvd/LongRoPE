@@ -80,6 +80,11 @@ The architecture begins with a pre-trained LLM and extends its context window in
 
 To maintain performance across varying context lengths, LongRoPE adjusts the Rotary Positional Embeddings (RoPE). The model identifies and exploits non-uniformities in positional embeddings to minimize information loss during interpolation. This allows for an 8x context extension without the need for fine-tuning. Additionally, the model employs a search algorithm to find optimal rescale factors for shorter contexts (e.g., 4k and 8k tokens) on the 256k fine-tuned LLM. These adjustments ensure that the model retains high performance even within the original context window size.
 
+
+### Structural Modifications
+
+The architecture incorporates several structural modifications to handle the increased context length efficiently:
+
 ## Implementation Highlights
 
 Insights into the coding and operational specifics that enable LongRoPE's functionality. This may include snippets or pseudocode illustrating key components.
