@@ -1,5 +1,7 @@
 # LongRoPE: Extending LLM Context Window Beyond 2 Million Tokens
 
+## Note: This repository is a work in progress and is not yet ready for production use. Please refer to the paper for more details
+
 ## Introduction
 
 The paper introduces LongRoPE, a method to extend the context window of large language models (LLMs) beyond 2 million tokens.
@@ -29,8 +31,6 @@ To address potential performance declines in the original (shorter) context wind
 Testing across various LLMs and tasks requiring long contexts has validated LongRoPE's efficacy. The method significantly maintains low perplexity across evaluation lengths from 4k to 2048k tokens, achieves above 90% accuracy in passkey retrieval, and delivers accuracy comparable to standard benchmarks within a 4096 context window
 
 ![LongRoPE](/images/longrope_comparison.jpg)
-
-## Note: This repository is a work in progress and is not yet ready for production use. Please refer to the paper for more details
 
 ### Potential implementations
 
@@ -76,7 +76,7 @@ The **LongRoPE** model architecture is designed to extend the context window of 
 
 The architecture begins with a pre-trained LLM and extends its context window incrementally. Initially, the model is fine-tuned to handle a context length of 256k tokens. This progressive approach avoids the need for direct fine-tuning on extremely long texts, which are rare and computationally expensive to process. By gradually increasing the context length, the model can adapt more effectively to longer sequences.
 
-#### Positional Embeddings Adjustment
+### Positional Embeddings Adjustment
 
 To maintain performance across varying context lengths, LongRoPE adjusts the Rotary Positional Embeddings (RoPE). The model identifies and exploits non-uniformities in positional embeddings to minimize information loss during interpolation. This allows for an 8x context extension without the need for fine-tuning. Additionally, the model employs a search algorithm to find optimal rescale factors for shorter contexts (e.g., 4k and 8k tokens) on the 256k fine-tuned LLM. These adjustments ensure that the model retains high performance even within the original context window size.
 
