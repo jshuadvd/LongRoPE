@@ -6,10 +6,16 @@ tags:
 - transformer-models
 - fine-tuning
 - long-contexts
-license: mit
+- natural-language-processing
+- context-window
+- context-length
+- nlp
+- llm
+- llm-context-window
+- llm-context-length
 datasets:
-- custom-dataset
 - wikitext
+- custom-dataset
 metrics:
 - perplexity
 - accuracy
