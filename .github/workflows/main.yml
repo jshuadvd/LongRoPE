@@ -11,7 +11,7 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v2
-            - name: Install Git
+            - name: Install Git LFS
               run: sudo apt-get install git-lfs
             - name: Install Hugging Face Hub
               run: pip install huggingface_hub
@@ -21,4 +21,4 @@ jobs:
               run: |
                   git lfs install
                   huggingface-cli login --token $HF_TOKEN
-                  git push https://huggingface.co/jshuadvd/LongRoPE main
+                  git push https://huggingface.co/jshuadvd/LongRoPE master:main --force
