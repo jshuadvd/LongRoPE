@@ -41,11 +41,11 @@ LongRoPE utilizes a progressive extension strategy to attain a 2048k context win
 
 To address potential performance declines in the original (shorter) context window, LongRoPE further adjusts the RoPE rescale factors on the extended LLM, scaling down to 4k and 8k context windows on the 256k fine-tuned LLM using its search algorithm to minimize positional interpolation. During inference for sequences under 8k in length, RoPE is updated with these meticulously searched rescale factors.
 
-![LongRoPE](/images/longrope_interpolation.png)
+![LongRoPE](https://raw.githubusercontent.com/jshuadvd/LongRoPE/master/images/longrope_interpolation.png)
 
 Testing across various LLMs and tasks requiring long contexts has validated LongRoPE's efficacy. The method significantly maintains low perplexity across evaluation lengths from 4k to 2048k tokens, achieves above 90% accuracy in passkey retrieval, and delivers accuracy comparable to standard benchmarks within a 4096 context window
 
-![LongRoPE](/images/longrope_comparison.jpg)
+![LongRoPE](https://raw.githubusercontent.com/jshuadvd/LongRoPE/master/images/longrope_comparison.jpg)
 
 ### Potential implementations
 
