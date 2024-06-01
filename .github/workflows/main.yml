@@ -21,5 +21,5 @@ jobs:
                   HF_USERNAME: ${{ secrets.HF_USERNAME }}
               run: |
                   git lfs install
-                  git remote set-url origin https://huggingface.co/${{ secrets.HF_USERNAME }}:${{ secrets.HF_TOKEN }}@huggingface.co/jshuadvd/LongRoPE
-                  git push origin master:main --force
+                  git remote add huggingface https://huggingface.co/${{ secrets.HF_USERNAME }}:${{ secrets.HF_TOKEN }}@huggingface.co/${{ secrets.HF_USERNAME }}/LongRoPE
+                  git push huggingface master:main --force
