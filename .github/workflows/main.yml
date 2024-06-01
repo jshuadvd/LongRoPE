@@ -17,6 +17,10 @@ jobs:
               run: sudo apt-get install git-lfs
             - name: Install Hugging Face Hub
               run: pip install huggingface_hub
+            - name: Configure Git Credentials
+              run: |
+                  git config --global credential.helper store
+                  echo "https://${{ secrets.HF_USERNAME }}:${{ secrets.HF_TOKEN }}@huggingface.co" > ~/.git-credentials
             - name: Sync to Hugging Face
               env:
                   HF_TOKEN: ${{ secrets.HF_TOKEN }}
@@ -24,5 +28,5 @@ jobs:
               run: |
                   git lfs install
                   huggingface-cli login --token $HF_TOKEN --add-to-git-credential
-                  git remote add huggingface https://huggingface.co/${{ secrets.HF_USERNAME }}:${{ secrets.HF_TOKEN }}@huggingface.co/${{ secrets.HF_USERNAME }}/LongRoPE
+                  git remote add huggingface https://huggingface.co/${{ secrets.HF_USERNAME }}/LongRoPE
                   git push huggingface master:main --force
