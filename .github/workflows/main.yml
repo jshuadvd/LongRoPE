@@ -21,4 +21,4 @@ jobs:
               run: |
                   git lfs install
                   huggingface-cli login --token $HF_TOKEN
-                  git push https://huggingface.co/jshuadvd/LongRoPE master
+                  git push https://huggingface.co/jshuadvd/LongRoPE main

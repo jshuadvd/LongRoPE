@@ -1,3 +1,20 @@
+---
+tags:
+- large-language-models
+- text-generation
+- context-extension
+- transformer-models
+- fine-tuning
+- long-contexts
+license: mit
+datasets:
+- custom-dataset
+- wikitext
+metrics:
+- perplexity
+- accuracy
+---
+
 # LongRoPE: Extending LLM Context Window Beyond 2 Million Tokens
 
 ## Introduction
