@@ -18,7 +18,8 @@ jobs:
             - name: Sync to Hugging Face
               env:
                   HF_TOKEN: ${{ secrets.HF_TOKEN }}
+                  HF_USERNAME: ${{ secrets.HF_USERNAME }}
               run: |
                   git lfs install
-                  huggingface-cli login --token $HF_TOKEN
-                  git push https://huggingface.co/jshuadvd/LongRoPE master:main --force
+                  git remote set-url origin https://huggingface.co/${{ secrets.HF_USERNAME }}:${{ secrets.HF_TOKEN }}@huggingface.co/jshuadvd/LongRoPE
+                  git push origin master:main --force
