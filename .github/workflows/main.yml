@@ -22,4 +22,6 @@ jobs:
               run: |
                   git lfs install
                   huggingface-cli login --token $HF_TOKEN
-                  git push https://huggingface.co/$HF_USERNAME/LongRoPE master:main --force
+                  git config --global credential.helper store
+                  echo "https://${{ secrets.HF_USERNAME }}:${{ secrets.HF_TOKEN }}@huggingface.co" > ~/.git-credentials
+                  git push https://huggingface.co/${{ secrets.HF_USERNAME }}/LongRoPE master:main --force
