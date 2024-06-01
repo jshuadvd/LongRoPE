@@ -3,7 +3,7 @@ name: Sync with Hugging Face
 on:
     push:
         branches:
-            - main
+            - master
 
 jobs:
     sync:
