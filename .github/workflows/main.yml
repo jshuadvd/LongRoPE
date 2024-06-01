@@ -11,6 +11,8 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v2
+              with:
+                  fetch-depth: 0 # Ensure full clone to avoid shallow update issues
             - name: Install Git LFS
               run: sudo apt-get install git-lfs
             - name: Install Hugging Face Hub
@@ -21,7 +23,6 @@ jobs:
                   HF_USERNAME: ${{ secrets.HF_USERNAME }}
               run: |
                   git lfs install
-                  huggingface-cli login --token $HF_TOKEN
-                  git config --global credential.helper store
-                  echo "https://${{ secrets.HF_USERNAME }}:${{ secrets.HF_TOKEN }}@huggingface.co" > ~/.git-credentials
-                  git push https://huggingface.co/${{ secrets.HF_USERNAME }}/LongRoPE master:main --force
+                  huggingface-cli login --token $HF_TOKEN --add-to-git-credential
+                  git remote add huggingface https://huggingface.co/${{ secrets.HF_USERNAME }}:${{ secrets.HF_TOKEN }}@huggingface.co/${{ secrets.HF_USERNAME }}/LongRoPE
+                  git push huggingface master:main --force
