@@ -1,5 +1,6 @@
 # Train a LongRoPE model on a given dataset
 # %%
+from src.main import LongRoPEModel
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -11,7 +12,6 @@ from importlib import reload
 import src.main
 
 reload(src.main)
-from src.main import LongRoPEModel
 
 
 # %%
