@@ -58,3 +58,16 @@ def test_extend_context():
         max_iterations=10,
     )
     assert extended_model is not None
+
+
+def test_recover_short_context():
+    model = LongRoPEModel(
+        d_model=512, n_heads=8, num_layers=6, vocab_size=50257, max_len=65536
+    )
+    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    recovered_model = model.recover_short_context(
+        data_path="data/raw/enwik8.gz",
+        max_sequence_length=65536,
+        tokenizer=tokenizer,
+    )
+    assert recovered_model is not None
