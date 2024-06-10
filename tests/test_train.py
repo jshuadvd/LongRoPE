@@ -12,3 +12,10 @@ def test_custom_dataset():
     dataset = CustomDataset(sequences, targets)
     assert len(dataset) == 2
     assert dataset[0] == (sequences[0], targets[0])
+
+
+def test_collate_fn():
+    batch = [([1, 2, 3], [2, 3, 4]), ([4, 5], [5, 6])]
+    inputs, targets = collate_fn(batch)
+    assert inputs.shape == (2, 3)
+    assert targets.shape == (2, 3)
