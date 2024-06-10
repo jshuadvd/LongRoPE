@@ -24,3 +24,10 @@ def test_non_uniform_interpolation():
     n_hat = 50
     interpolated = non_uniform_interpolation(pos_embed, 2.0, lambda_factors, n_hat)
     assert interpolated.shape == pos_embed.shape
+
+
+def test_rope_positional_encoding():
+    rope = RoPEPositionalEncoding(d_model=512, max_len=100)
+    positions = torch.arange(100).unsqueeze(0)
+    pos_embeddings = rope(positions)
+    assert pos_embeddings.shape == (1, 100, 512)
