@@ -19,3 +19,16 @@ def test_collate_fn():
     inputs, targets = collate_fn(batch)
     assert inputs.shape == (2, 3)
     assert targets.shape == (2, 3)
+
+
+def test_preprocess_data():
+    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    data = "This is a test."
+    sequences = preprocess_data(data, tokenizer, max_length=10, overlap=5)
+    assert len(sequences) > 0
+
+
+def test_validate_targets():
+    targets = [[1, 2, 3], [4, 5, 6]]
+    vocab_size = 10
+    assert validate_targets(targets, vocab_size) == True
