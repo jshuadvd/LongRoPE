@@ -16,3 +16,11 @@ def test_load_data():
     data = load_data("data/raw/enwik8.gz", tokenizer, 65536)
     assert len(data) > 0
     assert isinstance(data[0], torch.Tensor)
+
+
+def test_non_uniform_interpolation():
+    pos_embed = torch.randn(1, 100, 512)
+    lambda_factors = torch.ones(256)
+    n_hat = 50
+    interpolated = non_uniform_interpolation(pos_embed, 2.0, lambda_factors, n_hat)
+    assert interpolated.shape == pos_embed.shape
