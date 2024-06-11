@@ -99,3 +99,11 @@ def test_progressive_extension():
     assert n_hat is not None
     assert lambda_factors_base is not None
     assert n_hat_base is not None
+
+
+def test_short_context_recovery():
+    model = LongRoPEModel(
+        d_model=512, n_heads=8, num_layers=6, vocab_size=50257, max_len=65536
+    )
+    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    short_context_recovery(model, tokenizer)
