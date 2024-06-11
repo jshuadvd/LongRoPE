@@ -36,6 +36,38 @@ def test_rope_positional_encoding():
     assert not torch.equal(positions, pos_embeddings)
 
 
+def test_longrope_model_initialization():
+    model = LongRoPEModel(
+        d_model=512, n_heads=8, num_layers=6, vocab_size=50257, max_len=65536
+    )
+    assert model.d_model == 512
+    assert model.n_heads == 8
+    assert model.num_layers == 6
+    assert model.vocab_size == 50257
+    assert model.max_len == 65536
+
+
+def test_longrope_model_embedding():
+    model = LongRoPEModel(
+        d_model=512, n_heads=8, num_layers=6, vocab_size=50257, max_len=65536
+    )
+    input_ids = torch.randint(0, 50257, (2, 1024))
+    embeddings = model.embedding(input_ids)
+    assert embeddings.shape == (2, 1024, 512)
+    assert not torch.equal(input_ids, embeddings)
+
+
+def test_longrope_model_transformers():
+    model = LongRoPEModel(
+        d_model=512, n_heads=8, num_layers=6, vocab_size=50257, max_len=65536
+    )
+    input_ids = torch.randint(0, 50257, (2, 1024))
+    embeddings = model.embedding(input_ids)
+    for transformer in model.transformers:
+        embeddings = transformer(embeddings)
+    assert embeddings.shape == (2, 1024, 512)
+
+
 def test_longrope_model_forward():
     model = LongRoPEModel(
         d_model=512, n_heads=8, num_layers=6, vocab_size=50257, max_len=65536
@@ -116,32 +148,21 @@ def test_short_context_recovery():
     short_context_recovery(model, tokenizer)
 
 
-def test_longrope_model_initialization():
+def test_longrope_model_forward_with_extended_context():
     model = LongRoPEModel(
-        d_model=512, n_heads=8, num_layers=6, vocab_size=50257, max_len=65536
+        d_model=512, n_heads=8, num_layers=6, vocab_size=50257, max_len=2048000
     )
-    assert model.d_model == 512
-    assert model.n_heads == 8
-    assert model.num_layers == 6
-    assert model.vocab_size == 50257
-    assert model.max_len == 65536
+    input_ids = torch.randint(0, 50257, (2, 2048))
+    output = model(input_ids)
+    assert output.shape == (2, 2048, 512)
+    assert not torch.equal(input_ids, output)
 
 
-def test_longrope_model_embedding():
+def test_longrope_model_forward_with_short_context():
     model = LongRoPEModel(
-        d_model=512, n_heads=8, num_layers=6, vocab_size=50257, max_len=65536
-    )
-    input_ids = torch.randint(0, 50257, (2, 1024))
-    embeddings = model.embedding(input_ids)
-    assert embeddings.shape == (2, 1024, 512)
-
-
-def test_longrope_model_transformers():
-    model = LongRoPEModel(
-        d_model=512, n_heads=8, num_layers=6, vocab_size=50257, max_len=65536
+        d_model=512, n_heads=8, num_layers=6, vocab_size=50257, max_len=4096
     )
     input_ids = torch.randint(0, 50257, (2, 1024))
-    embeddings = model.embedding(input_ids)
-    for transformer in model.transformers:
-        embeddings = transformer(embeddings)
-    assert embeddings.shape == (2, 1024, 512)
+    output = model(input_ids)
+    assert output.shape == (2, 1024, 512)
+    assert not torch.equal(input_ids, output)
