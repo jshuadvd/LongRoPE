@@ -71,3 +71,31 @@ def test_recover_short_context():
         tokenizer=tokenizer,
     )
     assert recovered_model is not None
+
+
+def test_progressive_extension():
+    model = LongRoPEModel(
+        d_model=512, n_heads=8, num_layers=6, vocab_size=50257, max_len=65536
+    )
+    data = [torch.randint(0, 50257, (65536,)) for _ in range(10)]
+    (
+        extended_model,
+        lambda_factors,
+        n_hat,
+        lambda_factors_base,
+        n_hat_base,
+    ) = progressive_extension(
+        model,
+        data,
+        base_length=65536,
+        target_length=2048000,
+        population_size=64,
+        num_mutations=16,
+        num_crossovers=16,
+        max_iterations=10,
+    )
+    assert extended_model is not None
+    assert lambda_factors is not None
+    assert n_hat is not None
+    assert lambda_factors_base is not None
+    assert n_hat_base is not None
