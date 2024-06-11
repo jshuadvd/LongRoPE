@@ -114,7 +114,6 @@ def test_train_with_large_batch():
 
 
 def test_train_with_empty_dataset():
-    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     sequences = []
     targets = []
     dataset = CustomDataset(sequences, targets)
@@ -128,3 +127,67 @@ def test_train_with_empty_dataset():
     criterion = torch.nn.CrossEntropyLoss()
     with pytest.raises(ValueError):
         train(model, train_loader, val_loader, optimizer, criterion, device, epochs=1)
+
+
+def test_train_with_different_vocab_size():
+    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    sequences = [[1, 2, 3], [4, 5, 6]]
+    targets = [[2, 3, 4], [5, 6, 7]]
+    dataset = CustomDataset(sequences, targets)
+    train_loader = DataLoader(dataset, batch_size=2, collate_fn=collate_fn)
+    val_loader = DataLoader(dataset, batch_size=2, collate_fn=collate_fn)
+    device = torch.device("cpu")
+    model = LongRoPEModel(
+        d_model=512, n_heads=8, num_layers=6, vocab_size=10000, max_len=65536
+    ).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+    criterion = torch.nn.CrossEntropyLoss()
+    train(model, train_loader, val_loader, optimizer, criterion, device, epochs=1)
+
+
+def test_train_with_different_model_parameters():
+    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    sequences = [[1, 2, 3], [4, 5, 6]]
+    targets = [[2, 3, 4], [5, 6, 7]]
+    dataset = CustomDataset(sequences, targets)
+    train_loader = DataLoader(dataset, batch_size=2, collate_fn=collate_fn)
+    val_loader = DataLoader(dataset, batch_size=2, collate_fn=collate_fn)
+    device = torch.device("cpu")
+    model = LongRoPEModel(
+        d_model=256, n_heads=4, num_layers=3, vocab_size=50257, max_len=65536
+    ).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+    criterion = torch.nn.CrossEntropyLoss()
+    train(model, train_loader, val_loader, optimizer, criterion, device, epochs=1)
+
+
+def test_train_with_different_learning_rate():
+    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    sequences = [[1, 2, 3], [4, 5, 6]]
+    targets = [[2, 3, 4], [5, 6, 7]]
+    dataset = CustomDataset(sequences, targets)
+    train_loader = DataLoader(dataset, batch_size=2, collate_fn=collate_fn)
+    val_loader = DataLoader(dataset, batch_size=2, collate_fn=collate_fn)
+    device = torch.device("cpu")
+    model = LongRoPEModel(
+        d_model=512, n_heads=8, num_layers=6, vocab_size=50257, max_len=65536
+    ).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    criterion = torch.nn.CrossEntropyLoss()
+    train(model, train_loader, val_loader, optimizer, criterion, device, epochs=1)
+
+
+def test_train_with_different_batch_size():
+    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    sequences = [[1, 2, 3], [4, 5, 6]]
+    targets = [[2, 3, 4], [5, 6, 7]]
+    dataset = CustomDataset(sequences, targets)
+    train_loader = DataLoader(dataset, batch_size=4, collate_fn=collate_fn)
+    val_loader = DataLoader(dataset, batch_size=4, collate_fn=collate_fn)
+    device = torch.device("cpu")
+    model = LongRoPEModel(
+        d_model=512, n_heads=8, num_layers=6, vocab_size=50257, max_len=65536
+    ).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+    criterion = torch.nn.CrossEntropyLoss()
+    train(model, train_loader, val_loader, optimizer, criterion, device, epochs=1)
