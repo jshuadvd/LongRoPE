@@ -84,6 +84,7 @@ def test_longrope_model_forward():
     assert not torch.equal(input_ids, output)
 
 
+# Testing the extend_context function
 def test_extend_context():
     model = LongRoPEModel(
         d_model=512, n_heads=8, num_layers=6, vocab_size=50257, max_len=65536
@@ -103,6 +104,7 @@ def test_extend_context():
     assert extended_model.max_len == 2048000
 
 
+# Testing the recover_short_context function
 def test_recover_short_context():
     model = LongRoPEModel(
         d_model=512, n_heads=8, num_layers=6, vocab_size=50257, max_len=65536
@@ -117,6 +119,7 @@ def test_recover_short_context():
     assert recovered_model.max_len == 65536
 
 
+# Testing the progressive_extension function
 def test_progressive_extension():
     model = LongRoPEModel(
         d_model=512, n_heads=8, num_layers=6, vocab_size=50257, max_len=65536
@@ -146,6 +149,7 @@ def test_progressive_extension():
     assert extended_model.max_len == 2048000
 
 
+# Testing the short_context_recovery function
 def test_short_context_recovery():
     model = LongRoPEModel(
         d_model=512, n_heads=8, num_layers=6, vocab_size=50257, max_len=65536
@@ -154,6 +158,7 @@ def test_short_context_recovery():
     short_context_recovery(model, tokenizer)
 
 
+# Testing the longrope_model_forward_with_extended_context function
 def test_longrope_model_forward_with_extended_context():
     model = LongRoPEModel(
         d_model=512, n_heads=8, num_layers=6, vocab_size=50257, max_len=2048000
@@ -164,6 +169,7 @@ def test_longrope_model_forward_with_extended_context():
     assert not torch.equal(input_ids, output)
 
 
+# Testing the longrope_model_forward_with_short_context function
 def test_longrope_model_forward_with_short_context():
     model = LongRoPEModel(
         d_model=512, n_heads=8, num_layers=6, vocab_size=50257, max_len=4096
