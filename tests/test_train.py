@@ -71,6 +71,7 @@ def test_validate_targets_invalid():
     assert validate_targets(targets, vocab_size) == False
 
 
+# Testing the train function
 def test_train():
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     sequences = [[1, 2, 3], [4, 5, 6]]
@@ -87,6 +88,7 @@ def test_train():
     train(model, train_loader, val_loader, optimizer, criterion, device, epochs=1)
 
 
+# Testing the train function with GPU
 def test_train_with_gpu():
     if torch.cuda.is_available():
         tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
@@ -104,6 +106,7 @@ def test_train_with_gpu():
         train(model, train_loader, val_loader, optimizer, criterion, device, epochs=1)
 
 
+# Testing the train function with a large batch
 def test_train_with_large_batch():
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     sequences = [[1, 2, 3] * 1000, [4, 5, 6] * 1000]
@@ -120,6 +123,7 @@ def test_train_with_large_batch():
     train(model, train_loader, val_loader, optimizer, criterion, device, epochs=1)
 
 
+# Testing the train function with an empty dataset
 def test_train_with_empty_dataset():
     sequences = []
     targets = []
@@ -136,6 +140,7 @@ def test_train_with_empty_dataset():
         train(model, train_loader, val_loader, optimizer, criterion, device, epochs=1)
 
 
+# Testing the train function with a different vocab size
 def test_train_with_different_vocab_size():
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     sequences = [[1, 2, 3], [4, 5, 6]]
@@ -152,6 +157,7 @@ def test_train_with_different_vocab_size():
     train(model, train_loader, val_loader, optimizer, criterion, device, epochs=1)
 
 
+# Testing the train function with different model parameters
 def test_train_with_different_model_parameters():
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     sequences = [[1, 2, 3], [4, 5, 6]]
@@ -168,6 +174,7 @@ def test_train_with_different_model_parameters():
     train(model, train_loader, val_loader, optimizer, criterion, device, epochs=1)
 
 
+# Testing the train function with a different learning rate
 def test_train_with_different_learning_rate():
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     sequences = [[1, 2, 3], [4, 5, 6]]
@@ -184,6 +191,7 @@ def test_train_with_different_learning_rate():
     train(model, train_loader, val_loader, optimizer, criterion, device, epochs=1)
 
 
+# Testing the train function with a different batch size
 def test_train_with_different_batch_size():
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     sequences = [[1, 2, 3], [4, 5, 6]]
