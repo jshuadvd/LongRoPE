@@ -5,7 +5,7 @@ from transformers import GPT2Tokenizer
 from train import CustomDataset, collate_fn, preprocess_data, validate_targets, train
 from src.main import LongRoPEModel
 
-
+# Testing the CustomDataset class
 def test_custom_dataset():
     sequences = [[1, 2, 3], [4, 5, 6]]
     targets = [[2, 3, 4], [5, 6, 7]]
@@ -14,6 +14,7 @@ def test_custom_dataset():
     assert dataset[0] == (sequences[0], targets[0])
 
 
+# Testing the CustomDataset class with empty sequences and targets
 def test_custom_dataset_empty():
     sequences = []
     targets = []
@@ -21,6 +22,7 @@ def test_custom_dataset_empty():
     assert len(dataset) == 0
 
 
+# Testing the collate_fn function
 def test_collate_fn():
     batch = [([1, 2, 3], [2, 3, 4]), ([4, 5], [5, 6])]
     inputs, targets = collate_fn(batch)
@@ -30,6 +32,7 @@ def test_collate_fn():
     assert torch.equal(targets[0], torch.tensor([2, 3, 4]))
 
 
+# Testing the collate_fn function with an empty batch
 def test_collate_fn_empty():
     batch = []
     inputs, targets = collate_fn(batch)
@@ -37,6 +40,7 @@ def test_collate_fn_empty():
     assert targets.shape == (0,)
 
 
+# Testing the preprocess_data function
 def test_preprocess_data():
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     data = "This is a test."
@@ -45,6 +49,7 @@ def test_preprocess_data():
     assert all(len(seq) <= 10 for seq in sequences)
 
 
+# Testing the preprocess_data function with an empty string
 def test_preprocess_data_empty():
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     data = ""
@@ -52,12 +57,14 @@ def test_preprocess_data_empty():
     assert len(sequences) == 0
 
 
+# Testing the validate_targets function
 def test_validate_targets():
     targets = [[1, 2, 3], [4, 5, 6]]
     vocab_size = 10
     assert validate_targets(targets, vocab_size) == True
 
 
+# Testing the validate_targets function with invalid targets
 def test_validate_targets_invalid():
     targets = [[1, 2, 3], [4, 5, 10]]
     vocab_size = 10
