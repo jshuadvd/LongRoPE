@@ -38,12 +38,14 @@ def load_data(filename):
 
 def collate_fn(batch):
     """Custom collate function to pad data batches."""
+    if not batch:
+        return torch.tensor([]), torch.tensor([])
     inputs, targets = zip(*batch)
     padded_inputs = pad_sequence(
         [torch.tensor(seq) for seq in inputs], batch_first=True, padding_value=0
     )
     padded_targets = pad_sequence(
-        [torch.tensor(tgt) for tgt in targets], batch_first=True, padding_value=-1
+        [torch.tensor(tgt) for seq in targets], batch_first=True, padding_value=-1
     )
     return padded_inputs, padded_targets
 
