@@ -155,7 +155,12 @@ def test_short_context_recovery():
         d_model=512, n_heads=8, num_layers=6, vocab_size=50257, max_len=65536
     )
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-    short_context_recovery(model, tokenizer)
+    base_length = 65536
+    lambda_factors_base = torch.ones(256)
+    n_hat_base = 50
+    short_context_recovery(
+        model, tokenizer, base_length, lambda_factors_base, n_hat_base
+    )
 
 
 # Testing the longrope_model_forward_with_extended_context function
