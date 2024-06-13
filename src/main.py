@@ -90,6 +90,10 @@ def load_data(data_path, tokenizer, max_sequence_length):
     return tensor_data
 
 
+import torch.nn as nn
+import torch
+
+
 class LongRoPEModel(nn.Module):
     """
     Long Range Rotary Position Encoding (LongRoPE) model.
@@ -137,6 +141,7 @@ class LongRoPEModel(nn.Module):
     def __init__(self, d_model, n_heads, num_layers, vocab_size, max_len):
         super().__init__()
         self.d_model = d_model
+        self.n_heads = n_heads
         self.num_layers = num_layers
         self.vocab_size = vocab_size
         self.embedding = nn.Embedding(vocab_size, d_model)
@@ -149,6 +154,7 @@ class LongRoPEModel(nn.Module):
         )
         self.lambda_factors = None
         self.lambda_factors_base = None
+        self.extension_ratio = None
         self.n_hat = None
         self.n_hat_base = 0  # Initialize n_hat_base with a default value
 
