@@ -45,7 +45,7 @@ def collate_fn(batch):
         [torch.tensor(seq) for seq in inputs], batch_first=True, padding_value=0
     )
     padded_targets = pad_sequence(
-        [torch.tensor(tgt) for seq in targets], batch_first=True, padding_value=-1
+        [torch.tensor(tgt) for tgt in targets], batch_first=True, padding_value=-1
     )
     return padded_inputs, padded_targets
 
