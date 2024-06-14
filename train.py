@@ -10,6 +10,7 @@ import gzip
 from transformers import GPT2Tokenizer
 from importlib import reload
 import src.main
+from accelerate import Accelerator
 
 reload(src.main)
 

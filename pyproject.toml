@@ -11,6 +11,8 @@ torch = "^2.2.1"
 numpy = "^1.26.4"
 ipykernel = "^6.29.4"
 transformers = "^4.39.3"
+accelerate = "^0.31.0"
+datasets = "^2.20.0"
 
 
 [tool.poetry.group.dev.dependencies]
