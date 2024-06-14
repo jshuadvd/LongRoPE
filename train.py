@@ -14,6 +14,9 @@ from accelerate import Accelerator
 
 reload(src.main)
 
+# Initialize the accelerator
+accelerator = Accelerator()
+
 
 # %%
 class CustomDataset(Dataset):
