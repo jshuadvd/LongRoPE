@@ -39,6 +39,10 @@ def non_uniform_interpolation(pos_embed, extension_ratio, lambda_factors, n_hat)
     Returns:
         torch.Tensor: Interpolated position embeddings.
     """
+
+    if extension_ratio is None:
+        raise ValueError("extension_ratio cannot be None")
+
     d_model = pos_embed.shape[-1]
     interpolated_pos = pos_embed.clone()
 
