@@ -144,6 +144,7 @@ class LongRoPEModel(nn.Module):
         self.n_heads = n_heads
         self.num_layers = num_layers
         self.vocab_size = vocab_size
+        self.max_len = max_len
         self.embedding = nn.Embedding(vocab_size, d_model)
         self.rope = RoPEPositionalEncoding(d_model, max_len)
         self.transformers = nn.ModuleList(

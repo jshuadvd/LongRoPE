@@ -8,6 +8,7 @@ from torch.utils.data import DataLoader, Dataset
 from torch.nn.utils.rnn import pad_sequence
 import gzip
 from transformers import GPT2Tokenizer
+from datasets import load_dataset
 from importlib import reload
 import src.main
 from accelerate import Accelerator
