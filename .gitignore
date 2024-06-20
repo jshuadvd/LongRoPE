@@ -162,5 +162,4 @@ cython_debug/
 .ipynb_checkpoints/
 *.pyc
 __pycache__/
-notebooks/
 __pycache__/

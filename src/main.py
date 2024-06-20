@@ -268,6 +268,7 @@ class LongRoPEModel(nn.Module):
         Returns:
             LongRoPEModel: Recovered LongRoPE model.
         """
+
         if tokenizer is None:
             raise ValueError("Tokenizer is required for recovering short context.")
 
