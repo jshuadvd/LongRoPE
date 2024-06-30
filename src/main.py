@@ -28,34 +28,36 @@ class RoPEPositionalEncoding(nn.Module):
 
 def non_uniform_interpolation(pos_embed, extension_ratio, lambda_factors, n_hat):
     """
-    Perform non-uniform interpolation on position embeddings.
+    Perform non-uniform interpolation on position embeddings as described in the LongRoPE paper.
+
+    This function implements the two forms of non-uniformities:
+    1. Varying RoPE dimensions (lambda_factors)
+    2. Token positions (n_hat)
 
     Args:
-        pos_embed (torch.Tensor): Position embeddings.
-        extension_ratio (float): Extension ratio for context window.
-        lambda_factors (list): Lambda factors for interpolation.
-        n_hat (int): Threshold for applying interpolation.
+        pos_embed (torch.Tensor): Original position embeddings.
+        extension_ratio (float): Ratio of target length to original length.
+        lambda_factors (list): Lambda factors for each RoPE dimension.
+        n_hat (int): Number of initial tokens to keep without interpolation.
 
     Returns:
         torch.Tensor: Interpolated position embeddings.
     """
-
-    if extension_ratio is None:
-        raise ValueError("extension_ratio cannot be None")
-
-    if lambda_factors is None:
-        raise ValueError("lambda_factors cannot be None")
-
     d_model = pos_embed.shape[-1]
     interpolated_pos = pos_embed.clone()
 
     for i in range(d_model // 2):
+        # Apply different scaling based on token position
         mask = torch.arange(pos_embed.shape[-2], device=pos_embed.device) < n_hat
         scale = torch.where(
             mask,
             torch.ones_like(pos_embed[..., 0], device=pos_embed.device),
-            1 / (lambda_factors[i] * extension_ratio),
+            1
+            / (
+                lambda_factors[i] * extension_ratio
+            ),  # Use dimension-specific lambda factors
         )
+        # Apply scaling to both sine and cosine components
         interpolated_pos[..., 2 * i] *= scale
         interpolated_pos[..., 2 * i + 1] *= scale
 
