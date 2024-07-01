@@ -157,25 +157,16 @@ class LongRoPEModel(nn.Module):
                 for _ in range(num_layers)
             ]
         )
-        self.lambda_factors = None
-        self.lambda_factors_base = None
-        self.extension_ratio = None
-        self.n_hat = None
-        self.n_hat_base = 0
 
-        # New attributes for progressive extension
-        self.lambda_factors_128k = None
-        self.n_hat_128k = None
-        self.lambda_factors_256k = None
-        self.n_hat_256k = None
-        self.lambda_factors_2048k = None
-        self.n_hat_2048k = None
-
-        # New attributes for short context recovery
-        self.lambda_factors_4k = None
-        self.n_hat_4k = None
-        self.lambda_factors_8k = None
-        self.n_hat_8k = None
+        # Dictionary-based attributes for different context lengths
+        self.lambda_factors = {
+            "4k": None,
+            "8k": None,
+            "128k": None,
+            "256k": None,
+            "2048k": None,
+        }
+        self.n_hat = {"4k": None, "8k": None, "128k": None, "256k": None, "2048k": None}
 
     def forward(self, input_ids):
         input_embeddings = self.embedding(input_ids)
