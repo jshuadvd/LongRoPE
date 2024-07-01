@@ -221,6 +221,12 @@ class LongRoPEModel(nn.Module):
 
         return embeddings
 
+    def apply_interpolation(self, pos_embed, lambda_factors, n_hat):
+        """Apply non-uniform interpolation to position embeddings."""
+        return non_uniform_interpolation(
+            pos_embed, self.extension_ratio, lambda_factors, n_hat
+        )
+
     def extend_context(
         self,
         data_path,
