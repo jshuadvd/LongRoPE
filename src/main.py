@@ -166,7 +166,15 @@ class LongRoPEModel(nn.Module):
             "256k": None,
             "2048k": None,
         }
+
         self.n_hat = {"4k": None, "8k": None, "128k": None, "256k": None, "2048k": None}
+
+        # Base attributes
+        self.lambda_factors_base = None
+        self.n_hat_base = 0
+
+        # Extension ratio
+        self.extension_ratio = None
 
     def forward(self, input_ids):
         input_embeddings = self.embedding(input_ids)
