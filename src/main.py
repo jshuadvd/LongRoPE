@@ -260,6 +260,7 @@ class LongRoPEModel(nn.Module):
         self.extension_ratio = target_length / self.rope.max_len
 
         data = load_data(data_path, tokenizer, max_sequence_length)
+
         (
             model,
             lambda_factors,
@@ -605,14 +606,14 @@ def progressive_extension(
         model (nn.Module): LongRoPE model to be extended.
         data (list): List of input sequences for fine-tuning and evaluation.
         base_length (int): Original context window length of the model.
-        target_length (int): Target context window length (2048k in the paper).
+        target_length (int): Target context window length (up to 2048k in the paper).
         population_size (int): Size of the population for evolutionary search.
         num_mutations (int): Number of mutations per iteration in the search.
         num_crossovers (int): Number of crossovers per iteration in the search.
         max_iterations (int): Maximum number of iterations for evolutionary search.
 
     Returns:
-        tuple: (Extended model, 2048k lambda factors, 2048k n_hat, 256k lambda factors, 256k n_hat)
+        tuple: (Extended model, final lambda factors, final n_hat, 256k lambda factors, 256k n_hat)
     """
     # Stage 1: Extend to 256k
     curr_model = model
@@ -648,21 +649,25 @@ def progressive_extension(
         curr_model, data, 256000, lambda_factors_256k, n_hat_256k, steps=600
     )
 
-    # Stage 2: Extend to 2048k without further fine-tuning
-    lambda_factors_2048k, n_hat_2048k = search_lambda_factors(
-        curr_model,
-        data,
-        2048000 / 256000,
-        population_size // 2,  # Reduce population size for efficiency in 2048k search
-        num_mutations // 2,
-        num_crossovers // 2,
-        max_iterations // 2,
-    )
+    # Stage 2: Extend to target length without further fine-tuning
+    if target_length > 256000:
+        final_lambda_factors, final_n_hat = search_lambda_factors(
+            curr_model,
+            data,
+            target_length / 256000,
+            population_size
+            // 2,  # Reduce population size for efficiency in final search
+            num_mutations // 2,
+            num_crossovers // 2,
+            max_iterations // 2,
+        )
+    else:
+        final_lambda_factors, final_n_hat = lambda_factors_256k, n_hat_256k
 
     return (
         curr_model,
-        lambda_factors_2048k,
-        n_hat_2048k,
+        final_lambda_factors,
+        final_n_hat,
         lambda_factors_256k,
         n_hat_256k,
     )
