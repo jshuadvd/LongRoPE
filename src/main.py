@@ -634,7 +634,7 @@ def progressive_extension(
     lambda_factors_256k, n_hat_256k = search_lambda_factors(
         curr_model,
         data,
-        256000 / 128000,
+        256000 / base_length,
         population_size,
         num_mutations,
         num_crossovers,
@@ -655,7 +655,7 @@ def progressive_extension(
         final_lambda_factors, final_n_hat = search_lambda_factors(
             curr_model,
             data,
-            target_length / 256000,
+            target_length / base_length,
             population_size
             // 2,  # Reduce population size for efficiency in final search
             num_mutations // 2,
