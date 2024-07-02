@@ -184,25 +184,15 @@ class LongRoPEModel(nn.Module):
 
         # Apply non-uniform interpolation based on sequence length
         if seq_length <= 4096:
-            pos_embeddings = self.apply_interpolation(
-                pos_embeddings, self.lambda_factors_4k, self.n_hat_4k
-            )
+            pos_embeddings = self.apply_interpolation(pos_embeddings, "4k")
         elif seq_length <= 8192:
-            pos_embeddings = self.apply_interpolation(
-                pos_embeddings, self.lambda_factors_8k, self.n_hat_8k
-            )
+            pos_embeddings = self.apply_interpolation(pos_embeddings, "8k")
         elif seq_length <= 131072:
-            pos_embeddings = self.apply_interpolation(
-                pos_embeddings, self.lambda_factors_128k, self.n_hat_128k
-            )
+            pos_embeddings = self.apply_interpolation(pos_embeddings, "128k")
         elif seq_length <= 262144:
-            pos_embeddings = self.apply_interpolation(
-                pos_embeddings, self.lambda_factors_256k, self.n_hat_256k
-            )
+            pos_embeddings = self.apply_interpolation(pos_embeddings, "256k")
         else:
-            pos_embeddings = self.apply_interpolation(
-                pos_embeddings, self.lambda_factors_2048k, self.n_hat_2048k
-            )
+            pos_embeddings = self.apply_interpolation(pos_embeddings, "2048k")
 
         if seq_length > self.rope.max_len:
             # Truncate the position embeddings if the sequence length exceeds the maximum length
