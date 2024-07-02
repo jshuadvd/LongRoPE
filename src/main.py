@@ -609,7 +609,6 @@ def progressive_extension(
     """
     # Stage 1: Extend to 256k
     curr_model = model
-    curr_length = base_length
 
     # First extend to 128k
     lambda_factors_128k, n_hat_128k = search_lambda_factors(
@@ -621,10 +620,15 @@ def progressive_extension(
         num_crossovers,
         max_iterations,
     )
+
     # Fine-tune for 400 steps as specified in the paper
     curr_model = fine_tune(
         curr_model, data, 128000, lambda_factors_128k, n_hat_128k, steps=400
     )
+
+    # Update model attributes
+    curr_model.lambda_factors["128k"] = lambda_factors_128k
+    curr_model.n_hat["128k"] = n_hat_128k
 
     # Then extend to 256k
     lambda_factors_256k, n_hat_256k = search_lambda_factors(
@@ -636,10 +640,15 @@ def progressive_extension(
         num_crossovers,
         max_iterations,
     )
+
     # Fine-tune for 600 steps as specified in the paper
     curr_model = fine_tune(
         curr_model, data, 256000, lambda_factors_256k, n_hat_256k, steps=600
     )
+
+    # Update model attributes
+    curr_model.lambda_factors["256k"] = lambda_factors_256k
+    curr_model.n_hat["256k"] = n_hat_256k
 
     # Stage 2: Extend to target length without further fine-tuning
     if target_length > 256000:
@@ -653,6 +662,9 @@ def progressive_extension(
             num_crossovers // 2,
             max_iterations // 2,
         )
+        # Update model attributes
+        curr_model.lambda_factors["2048k"] = final_lambda_factors
+        curr_model.n_hat["2048k"] = final_n_hat
     else:
         final_lambda_factors, final_n_hat = lambda_factors_256k, n_hat_256k
 
