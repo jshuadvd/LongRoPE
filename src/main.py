@@ -136,7 +136,17 @@ class LongRoPEModel(nn.Module):
             Returns:
                 torch.Tensor: Output embeddings from the model.
 
-        extend_context(data_path, target_length, max_sequence_length, tokenizer):
+        apply_interpolation(pos_embed, context_length):
+            Apply non-uniform interpolation to position embeddings.
+
+            Args:
+                pos_embed (torch.Tensor): Position embeddings to interpolate.
+                context_length (str): Key representing the context length (e.g., "4k", "128k").
+
+            Returns:
+                torch.Tensor: Interpolated position embeddings.
+
+        extend_context(data_path, target_length, max_sequence_length, tokenizer, population_size, num_mutations, num_crossovers, max_iterations):
             Extend the context window of the model.
 
             Args:
@@ -144,9 +154,24 @@ class LongRoPEModel(nn.Module):
                 target_length (int): Target context window length.
                 max_sequence_length (int): Maximum sequence length for input data.
                 tokenizer: Tokenizer object for encoding input data.
+                population_size (int): Size of the population for evolutionary search.
+                num_mutations (int): Number of mutations per iteration.
+                num_crossovers (int): Number of crossovers per iteration.
+                max_iterations (int): Maximum number of iterations for evolutionary search.
 
             Returns:
                 LongRoPEModel: Extended LongRoPE model.
+
+        recover_short_context(data_path, max_sequence_length, tokenizer):
+            Recover performance on shorter context lengths.
+
+            Args:
+                data_path (str): Path to the input data file.
+                max_sequence_length (int): Maximum sequence length for input data.
+                tokenizer: Tokenizer object for encoding input data.
+
+            Returns:
+                LongRoPEModel: Recovered LongRoPE model.
     """
 
     def __init__(self, d_model, n_heads, num_layers, vocab_size, max_len):
@@ -202,11 +227,11 @@ class LongRoPEModel(nn.Module):
         else:
             pos_embeddings = self.apply_interpolation(pos_embeddings, "2048k")
 
-        if seq_length > self.rope.max_len:
-            # Truncate the position embeddings if the sequence length exceeds the maximum length
-            pos_embeddings = pos_embeddings[:, : self.rope.max_len, :]
-            input_embeddings = input_embeddings[:, : self.rope.max_len, :]
-            seq_length = self.rope.max_len
+        if seq_length > self.base_context_length:
+            # Truncate the position embeddings if the sequence length exceeds the base context length
+            pos_embeddings = pos_embeddings[:, : self.base_context_length, :]
+            input_embeddings = input_embeddings[:, : self.base_context_length, :]
+            seq_length = self.base_context_length
 
         # Ensure that pos_embeddings has the same shape as input_embeddings
         pos_embeddings = pos_embeddings[:, :seq_length, : self.d_model]
