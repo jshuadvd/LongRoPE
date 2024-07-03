@@ -115,13 +115,16 @@ class LongRoPEModel(nn.Module):
         d_model (int): Dimension of the model.
         n_heads (int): Number of attention heads.
         num_layers (int): Number of transformer layers.
-        max_len (int): Maximum sequence length.
+        vocab_size (int): Size of the vocabulary.
+        base_context_length (int): Original context window length of the model.
         rope (RoPEPositionalEncoding): Rotary Position Encoding (RoPE) module.
         transformers (nn.ModuleList): List of transformer encoder layers.
-        lambda_factors (list): Lambda factors for non-uniform interpolation.
-        lambda_factors_base (list): Lambda factors for the base model.
-        extension_ratio (float): Extension ratio for the context window.
-        n_hat (int): Threshold for applying interpolation.
+        lambda_factors (dict): Lambda factors for non-uniform interpolation for different context lengths.
+        n_hat (dict): Threshold for applying interpolation for different context lengths.
+        lambda_factors_base (list): Base lambda factors for the original context length.
+        n_hat_base (int): Base n_hat for the original context length.
+        extension_ratio (float): Ratio of the extended context length to the base context length.
+
 
     Methods:
         forward(input_ids):
