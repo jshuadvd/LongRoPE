@@ -34,6 +34,10 @@ def non_uniform_interpolation(pos_embed, extension_ratio, lambda_factors, n_hat)
     1. Varying RoPE dimensions (lambda_factors)
     2. Token positions (n_hat)
 
+    The n_hat parameter represents the number of initial tokens to keep without interpolation,
+    as described in the paper. This allows the model to maintain high-quality representations
+    for the first n_hat tokens, which are often crucial for task performance.
+
     Args:
         pos_embed (torch.Tensor): Original position embeddings.
         extension_ratio (float): Ratio of target length to original length.
