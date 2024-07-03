@@ -725,7 +725,8 @@ def progressive_extension(
 def short_context_recovery(model, data, base_length, lambda_factors_base, n_hat_base):
     """
     This function ensures that the model maintains good performance on shorter contexts (4k and 8k)
-    even after being extended to very long contexts.
+    even after being extended to very long contexts. It's a crucial step in the LongRoPE approach
+    to prevent performance degradation on shorter sequences.
 
     Args:
         model (nn.Module): Extended LongRoPE model.
