@@ -664,6 +664,9 @@ def progressive_extension(
 
     # Stage 2: Extend to target length without further fine-tuning
     if target_length > 256000:
+        # Reduce population size, mutations, and crossovers for efficiency in the final search
+        # This is done because the search space becomes much larger for the 2048k extension,
+        # and reducing these parameters helps to balance search efficiency and effectiveness
         final_lambda_factors, final_n_hat = search_lambda_factors(
             curr_model,
             data,
