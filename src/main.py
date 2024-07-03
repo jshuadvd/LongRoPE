@@ -175,6 +175,7 @@ class LongRoPEModel(nn.Module):
 
         # Extension ratio
         self.extension_ratio = None
+        self.base_context_length = max_len
 
     def forward(self, input_ids):
         input_embeddings = self.embedding(input_ids)
