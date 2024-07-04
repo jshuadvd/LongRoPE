@@ -467,23 +467,30 @@ def evaluate_individual(model, data, individual):
     Args:
         model (nn.Module): LongRoPE model.
         data (list): List of input sequences.
-        individual (tuple): Lambda factor configuration and n_hat.
+        individual (dict): Lambda factor configuration and n_hat.
 
     Returns:
         float: Perplexity score for the individual.
     """
-    lambda_factors, n_hat = individual
+    lambda_factors, n_hat = individual["lambda_i"], individual["n_hat"]
     model.lambda_factors = lambda_factors
     model.n_hat = n_hat
 
-    perplexities = []
-    for seq in data:
-        input_ids = seq.unsqueeze(0)
-        output = model(input_ids)
-        perplexity = torch.exp(torch.mean(output))
-        perplexities.append(perplexity.item())
+    total_loss = 0
+    total_tokens = 0
+    model.eval()
+    with torch.no_grad():
+        for seq in data:
+            input_ids = seq.unsqueeze(0)
+            output = model(input_ids)
+            loss = F.cross_entropy(
+                output.view(-1, model.vocab_size), seq.view(-1), reduction="sum"
+            )
+            total_loss += loss.item()
+            total_tokens += seq.numel()
 
-    return np.mean(perplexities)
+    perplexity = torch.exp(total_loss / total_tokens)
+    return perplexity.item()
 
 
 def evaluate_population(model, data, population):
