@@ -643,6 +643,27 @@ def fine_tune(model, train_data, val_data, target_length, lambda_factors, n_hat,
     return best_model if best_model is not None else model
 
 
+def evaluate_perplexity(model, data, target_length):
+    total_loss = 0
+    total_tokens = 0
+    model.eval()
+    with torch.no_grad():
+        for seq in data:
+            seq_len = seq.size(0)
+            if seq_len <= target_length:
+                input_ids = seq.unsqueeze(0)
+            else:
+                start_idx = random.randint(0, seq_len - target_length)
+                input_ids = seq[start_idx : start_idx + target_length].unsqueeze(0)
+            output = model(input_ids)
+            loss = F.cross_entropy(
+                output.view(-1, model.vocab_size), input_ids.view(-1), reduction="sum"
+            )
+            total_loss += loss.item()
+            total_tokens += input_ids.numel()
+    return torch.exp(total_loss / total_tokens)
+
+
 def progressive_extension(
     model,
     data,
