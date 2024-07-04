@@ -592,13 +592,14 @@ def crossover(parents, num_crossovers, d_model):
     return crossover_population
 
 
-def fine_tune(model, data, target_length, lambda_factors, n_hat, steps):
+def fine_tune(model, train_data, val_data, target_length, lambda_factors, n_hat, steps):
     """
     Fine-tune the LongRoPE model.
 
     Args:
         model (nn.Module): LongRoPE model.
-        data (list): List of input sequences.
+        train_data (list): List of input sequences for training.
+        val_data (list): List of input sequences for validation.
         target_length (int): Target context window length.
         lambda_factors (list): Lambda factors for interpolation.
         n_hat (int): Threshold for applying interpolation.
@@ -611,26 +612,35 @@ def fine_tune(model, data, target_length, lambda_factors, n_hat, steps):
     model.n_hat[f"{target_length // 1000}k"] = n_hat
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
+    best_val_perplexity = float("inf")
+    best_model = None
+
     for step in range(steps):
+        # Training
+        model.train()
         optimizer.zero_grad()
-
-        # Randomly select a sequence from the data
-        seq = random.choice(data)
+        seq = random.choice(train_data)
         seq_len = seq.size(0)
-
         if seq_len <= target_length:
             input_ids = seq.unsqueeze(0)
         else:
             start_idx = random.randint(0, seq_len - target_length)
             input_ids = seq[start_idx : start_idx + target_length].unsqueeze(0)
-
         output = model(input_ids)
-        loss = torch.mean(output)
-
+        loss = F.cross_entropy(output.view(-1, model.vocab_size), input_ids.view(-1))
         loss.backward()
         optimizer.step()
 
-    return model
+        # Validation (every 50 steps)
+        if step % 50 == 0:
+            model.eval()
+            val_perplexity = evaluate_perplexity(model, val_data, target_length)
+            print(f"Step {step}, Validation Perplexity: {val_perplexity}")
+            if val_perplexity < best_val_perplexity:
+                best_val_perplexity = val_perplexity
+                best_model = copy.deepcopy(model)
+
+    return best_model if best_model is not None else model
 
 
 def progressive_extension(
