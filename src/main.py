@@ -397,15 +397,18 @@ def search_lambda_factors(
     population = initialize_population(population_size, search_space, model.d_model)
 
     for _ in range(max_iterations):
-        # Evaluate the fitness (perplexity) of each individual in the population
+        # Step 1: Evaluate the fitness (perplexity) of each individual in the population
         perplexities = evaluate_population(model, data, population)
-        # Select the top-performing individuals as parents
+
+        # Step 2: Select the top-performing individuals as parents
         parents = select_topk(population, perplexities, k=population_size // 2)
-        # Create new population through mutation and crossover
-        population = mutate(parents, num_mutations, model.d_model) + crossover(
-            parents, num_crossovers, model.d_model
-        )
-        # Apply monotonic constraint to ensure λi ≤ λi+1
+
+        # Step 3: Create new population through mutation and crossover
+        mutated = mutate(parents, num_mutations, model.d_model)
+        crossed = crossover(parents, num_crossovers, model.d_model)
+        population = mutated + crossed
+
+        # Step 4: Apply monotonic constraint to ensure λi ≤ λi+1
         population = [
             apply_monotonic_constraint(individual) for individual in population
         ]
