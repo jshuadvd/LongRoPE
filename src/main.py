@@ -546,18 +546,17 @@ def mutate(parents, num_mutations, d_model):
     """
     mutated_population = []
     for _ in range(num_mutations):
-        parent_lambda, parent_n_hat = random.choice(parents)
-        child_lambda = parent_lambda.clone()
-        child_n_hat = parent_n_hat
+        parent = random.choice(parents)
+        child = {"lambda_i": parent["lambda_i"].clone(), "n_hat": parent["n_hat"]}
 
         for i in range(d_model):
             if random.random() < 0.1:
-                child_lambda[i] *= random.uniform(0.8, 1.2)
+                child["lambda_i"][i] *= random.uniform(0.8, 1.2)
 
         if random.random() < 0.1:
-            child_n_hat = random.randint(0, d_model)
+            child["n_hat"] = random.randint(0, d_model)
 
-        mutated_population.append((child_lambda, child_n_hat))
+        mutated_population.append(child)
 
     return mutated_population
 
