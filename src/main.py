@@ -488,6 +488,7 @@ def initialize_population(population_size, search_space, d_model):
 
     population.append(yarn_individual)
 
+    # Generate the rest of the population randomly
     for _ in range(population_size):
         individual = {
             "lambda_i": [
