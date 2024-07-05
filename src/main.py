@@ -452,7 +452,18 @@ def initialize_population(population_size, search_space, d_model):
     Returns:
         population: List of individuals, each represented as a dictionary
     """
+
+    # Initialize population
     population = []
+
+    # Add PI individual
+    pi_individual = {
+        "lambda_i": [search_space["lambda_i"][1]] * (d_model // 2),
+        "n_hat": 0,
+    }
+
+    population.append(pi_individual)
+
     for _ in range(population_size):
         individual = {
             "lambda_i": [
