@@ -17,6 +17,8 @@ from accelerate import Accelerator
 import wandb
 import os
 
+from evaluation import evaluate_passkey_retrieval
+
 reload(src.main)
 
 # Initialize the accelerator
