@@ -464,6 +464,17 @@ def initialize_population(population_size, search_space, d_model):
 
     population.append(pi_individual)
 
+    # Add NTK individual
+    ntk_individual = {
+        "lambda_i": [
+            search_space["lambda_i"][1] ** (i / (d_model // 2))
+            for i in range(d_model // 2)
+        ],
+        "n_hat": 0,
+    }
+
+    population.append(ntk_individual)
+
     for _ in range(population_size):
         individual = {
             "lambda_i": [
