@@ -13,6 +13,7 @@ ipykernel = "^6.29.4"
 transformers = "^4.39.3"
 accelerate = "^0.31.0"
 datasets = "^2.20.0"
+wandb = "^0.17.4"
 
 
 [tool.poetry.group.dev.dependencies]

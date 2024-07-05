@@ -6,17 +6,22 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
 from torch.nn.utils.rnn import pad_sequence
+from torch.cuda.amp import autocast, GradScaler
+from torch.optim.lr_scheduler import CosineAnnealingLR
 import gzip
 from transformers import GPT2Tokenizer
 from datasets import load_dataset
 from importlib import reload
 import src.main
 from accelerate import Accelerator
+import wandb
+import os
 
 reload(src.main)
 
 # Initialize the accelerator
 accelerator = Accelerator()
+
 
 # %%
 class CustomDataset(Dataset):
@@ -111,13 +116,18 @@ def preprocess_data(data, tokenizer, max_length, overlap):
     return sequences
 
 
+def compute_perplexity(loss):
+    return torch.exp(loss)
+
+
 def train(model, train_loader, val_loader, optimizer, criterion, epochs=10):
     """Training loop for the model."""
     model.train()
     for epoch in range(epochs):
         for inputs, targets in train_loader:
-            inputs, targets = inputs.to(accelerator.device), targets.to(
-                accelerator.device
+            inputs, targets = (
+                inputs.to(accelerator.device),
+                targets.to(accelerator.device),
             )
 
             print(f"Input shape: {inputs.shape}")
@@ -140,8 +150,9 @@ def train(model, train_loader, val_loader, optimizer, criterion, epochs=10):
         val_loss = 0
         with torch.no_grad():
             for inputs, targets in val_loader:
-                inputs, targets = inputs.to(accelerator.device), targets.to(
-                    accelerator.device
+                inputs, targets = (
+                    inputs.to(accelerator.device),
+                    targets.to(accelerator.device),
                 )
                 outputs = model(inputs)
                 loss = criterion(outputs.permute(0, 2, 1), targets)
