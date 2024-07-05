@@ -1,5 +1,6 @@
 import random
 import torch
+import wandb
 
 
 def generate_passkey_prompt(passkey, context_length):
