@@ -75,3 +75,10 @@ def passkey_retrieval_test(model, tokenizer, max_length, num_trials=10):
         accuracies[length] = correct_retrievals / num_trials
 
     return accuracies
+
+
+def evaluate_passkey_retrieval(model, tokenizer, max_length):
+    accuracies = passkey_retrieval_test(model, tokenizer, max_length)
+    for length, accuracy in accuracies.items():
+        print(f"Passkey retrieval accuracy at {length} tokens: {accuracy:.2f}")
+        wandb.log({f"passkey_retrieval_{length}": accuracy})
