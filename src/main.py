@@ -475,6 +475,19 @@ def initialize_population(population_size, search_space, d_model):
 
     population.append(ntk_individual)
 
+    # Add YaRN individual
+    yarn_individual = {
+        "lambda_i": [1.0] * (d_model // 6)
+        + [
+            search_space["lambda_i"][1] ** (i / (d_model // 2))
+            for i in range(d_model // 6, d_model // 3)
+        ]
+        + [search_space["lambda_i"][1]] * (d_model // 2 - d_model // 3),
+        "n_hat": 0,
+    }
+
+    population.append(yarn_individual)
+
     for _ in range(population_size):
         individual = {
             "lambda_i": [
