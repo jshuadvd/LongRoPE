@@ -335,7 +335,15 @@ def main():
     scheduler = CosineAnnealingLR(optimizer, T_max=10)
 
     # Train the recovered model
-    train(recovered_model, train_loader, val_loader, optimizer, criterion, scheduler)
+    train(
+        recovered_model,
+        train_loader,
+        val_loader,
+        optimizer,
+        criterion,
+        scheduler,
+        tokenizer,
+    )
 
     # Finish logging and close the Weights & Biases run
     wandb.finish()
