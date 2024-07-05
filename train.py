@@ -129,6 +129,7 @@ def train(
     optimizer,
     criterion,
     scheduler,
+    tokenizer,
     epochs=10,
     gradient_accumulation_steps=4,
 ):
@@ -142,6 +143,7 @@ def train(
         optimizer (Optimizer): Optimizer for updating model parameters.
         criterion (nn.Module): Loss function.
         scheduler (LRScheduler): Learning rate scheduler.
+        tokenizer: Tokenizer for encoding/decoding text.
         epochs (int): Number of training epochs.
         gradient_accumulation_steps (int): Number of steps to accumulate gradients.
 
@@ -208,6 +210,9 @@ def train(
 
         # Update learning rate
         scheduler.step()
+
+        # Evaluate passkey retrieval at the end of each epoch
+        evaluate_passkey_retrieval(model, tokenizer, model.max_len)
 
         # Log metrics
         wandb.log(
