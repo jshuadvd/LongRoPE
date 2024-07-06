@@ -218,8 +218,13 @@ def train(
         # Update learning rate
         scheduler.step()
 
-        # Evaluate passkey retrieval at the end of each epoch
-        evaluate_passkey_retrieval(model, tokenizer, model.max_len)
+        # Evaluate passkey retrieval at the end of each epoch and log results
+        passkey_accuracies = evaluate_passkey_retrieval(model, tokenizer, model.max_len)
+        for length, accuracy in passkey_accuracies.items():
+            wandb.log({f"passkey_retrieval_{length}": accuracy})
+            logger.info(
+                f"Passkey retrieval accuracy at {length} tokens: {accuracy:.2f}"
+            )
 
         # Log metrics
         wandb.log(
