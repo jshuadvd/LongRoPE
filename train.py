@@ -248,8 +248,8 @@ def train(
             }
         )
 
-        # Print epoch results
-        print(
+        # Log epoch results
+        logger.info(
             f"Epoch {epoch+1}, Train Loss: {avg_train_loss:.4f}, Train Perplexity: {train_perplexity:.4f}, "
             f"Val Loss: {avg_val_loss:.4f}, Val Perplexity: {val_perplexity:.4f}"
         )
