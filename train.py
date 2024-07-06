@@ -226,6 +226,16 @@ def train(
                 f"Passkey retrieval accuracy at {length} tokens: {accuracy:.2f}"
             )
 
+        # Log gradient norm
+        total_norm = 0
+        for p in model.parameters():
+            if p.grad is not None:
+                param_norm = p.grad.data.norm(2)
+                total_norm += param_norm.item() ** 2
+        total_norm = total_norm**0.5
+        wandb.log({"gradient_norm": total_norm})
+        logger.info(f"Gradient norm: {total_norm:.4f}")
+
         # Log metrics
         wandb.log(
             {
