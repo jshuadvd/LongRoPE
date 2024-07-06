@@ -16,8 +16,15 @@ import src.main
 from accelerate import Accelerator
 import wandb
 import os
+import logging
 
 from evaluation import evaluate_passkey_retrieval
+
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 reload(src.main)
 
