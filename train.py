@@ -266,7 +266,7 @@ def train(
         else:
             patience += 1
             if patience >= max_patience:
-                print("Early stopping triggered")
+                logger.info("Early stopping triggered")
                 break
 
 
