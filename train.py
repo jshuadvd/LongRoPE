@@ -354,6 +354,17 @@ def main():
         model, optimizer, train_loader, val_loader, scheduler
     )
 
+    # Check for the latest checkpoint
+    latest_checkpoint = "checkpoint_latest.pt"
+
+    if os.path.exists(latest_checkpoint):
+        logger.info(f"Found checkpoint: {latest_checkpoint}")
+        resume_from_checkpoint = latest_checkpoint
+
+    else:
+        logger.info("No checkpoint found, starting training from scratch")
+        resume_from_checkpoint = None
+
     # Extend the context window of the model
     extended_model = model.extend_context(
         data_path="../data/raw/enwik8.gz",
