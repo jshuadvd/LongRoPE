@@ -397,6 +397,7 @@ def main():
         criterion,
         scheduler,
         tokenizer,
+        resume_from_checkpoint=resume_from_checkpoint,
     )
 
     # Finish logging and close the Weights & Biases run
