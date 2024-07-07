@@ -177,7 +177,7 @@ def train(
             f"Resumed training from {resume_from_checkpoint} at epoch {start_epoch}"
         )
 
-    for epoch in range(epochs):
+    for epoch in range(start_epoch, epochs):
         model.train()
         total_loss = 0
 
