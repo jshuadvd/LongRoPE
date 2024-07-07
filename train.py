@@ -282,7 +282,9 @@ def train(
             best_val_loss = avg_val_loss
             patience = 0
             # Save best model
-            accelerator.save_state("best_model.pt")
+            accelerator.save_state(
+                {"epoch": epoch, "best_val_loss": best_val_loss}, "best_model.pt"
+            )
         else:
             patience += 1
             if patience >= max_patience:
