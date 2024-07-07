@@ -267,7 +267,15 @@ def train(
         )
 
         # Save checkpoint
-        accelerator.save_state(f"checkpoint_epoch_{epoch}.pt")
+        accelerator.save_state(
+            {"epoch": epoch, "best_val_loss": best_val_loss},
+            f"checkpoint_epoch_{epoch}.pt",
+        )
+
+        # Save latest checkpoint
+        accelerator.save_state(
+            {"epoch": epoch, "best_val_loss": best_val_loss}, "checkpoint_latest.pt"
+        )
 
         # Early stopping
         if avg_val_loss < best_val_loss:
