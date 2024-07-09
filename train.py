@@ -306,7 +306,7 @@ def main():
     tokenizer.model_max_length = 2048000  # Set maximum sequence length to 2048k tokens
 
     # Load the raw data
-    data = load_data("../data/raw/enwik8.gz")
+    # data = load_data("../data/raw/enwik8.gz")
 
     # Load datasets mentioned in the LongRoPE paper
     pg19_dataset = load_dataset("pg19", split="train")
