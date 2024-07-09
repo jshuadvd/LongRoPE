@@ -125,6 +125,29 @@ def preprocess_data(data, tokenizer, max_length, overlap):
     return sequences
 
 
+def process_dataset(dataset, tokenizer, max_length, overlap):
+    """
+    Process a dataset using the preprocess_data function.
+
+    Args:
+        dataset: The dataset to process.
+        tokenizer: Tokenizer object for encoding the data.
+        max_length (int): Maximum sequence length for each chunk.
+        overlap (int): Overlap size between consecutive chunks.
+
+    Returns:
+        list: List of preprocessed sequences from the entire dataset.
+    """
+    all_sequences = []
+    for item in dataset:
+        text = (
+            item["text"] if "text" in item else item["content"]
+        )  # Adjust based on dataset structure
+        sequences = preprocess_data(text, tokenizer, max_length, overlap)
+        all_sequences.extend(sequences)
+    return all_sequences
+
+
 def compute_perplexity(loss):
     return torch.exp(loss)
 
