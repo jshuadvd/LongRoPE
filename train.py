@@ -169,14 +169,16 @@ def train(
     patience = 0
     max_patience = 3
     start_epoch = 0
+    global_step = 0
 
     # Check if resuming from a checkpoint
     if resume_from_checkpoint and os.path.exists(resume_from_checkpoint):
         checkpoint = accelerator.load_state(resume_from_checkpoint)
         start_epoch = checkpoint.get("epoch", 0) + 1
+        global_step = checkpoint.get("global_step", 0)
         best_val_loss = checkpoint.get("best_val_loss", float("inf"))
         logger.info(
-            f"Resumed training from {resume_from_checkpoint} at epoch {start_epoch}"
+            f"Resumed training from {resume_from_checkpoint} at epoch {start_epoch}, step {global_step}"
         )
 
     for epoch in range(start_epoch, epochs):
