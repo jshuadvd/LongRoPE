@@ -186,6 +186,9 @@ def train(
         total_loss = 0
 
         for i, (inputs, targets) in enumerate(train_loader):
+            if max_steps and global_step >= max_steps:
+                break
+
             # Move data to the appropriate device (CPU or GPU)
             inputs, targets = (
                 inputs.to(accelerator.device),
@@ -207,8 +210,12 @@ def train(
                 scaler.step(optimizer)
                 scaler.update()
                 optimizer.zero_grad()
+                global_step += 1
 
             total_loss += loss.item()
+
+            if max_steps and global_step >= max_steps:
+                break
 
         # Calculate average training loss and perplexity
         avg_train_loss = total_loss / len(train_loader)
