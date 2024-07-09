@@ -140,6 +140,7 @@ def train(
     epochs=10,
     gradient_accumulation_steps=4,
     resume_from_checkpoint=None,
+    max_steps=None,
 ):
     """
     Train the LongRoPE model.
@@ -155,6 +156,7 @@ def train(
         epochs (int): Number of training epochs.
         gradient_accumulation_steps (int): Number of steps to accumulate gradients.
         resume_from_checkpoint (str): Path to a checkpoint to resume training from.
+        max_steps (int): Maximum number of steps to train. If None, train for full epochs.
 
     Returns:
         None
