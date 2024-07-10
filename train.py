@@ -460,6 +460,16 @@ def main():
                 tokenizer=tokenizer,
             )
 
+        # Add a simple validation step after short context recovery
+        model.eval()
+        with torch.no_grad():
+            val_loss = sum(
+                criterion(model(inputs), targets).item()
+                for inputs, targets in val_loader
+            ) / len(val_loader)
+        logger.info(f"Validation loss after short context recovery: {val_loss:.4f}")
+        wandb.log({"short_context_val_loss": val_loss})
+
     # Finish logging and close the Weights & Biases run
     wandb.finish()
 
