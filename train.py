@@ -132,6 +132,7 @@ def preprocess_data(data, tokenizer, max_length, overlap):
         end = start + max_length
         chunk = data[start:end]
         # tokenized_chunk = tokenizer.encode(chunk)
+        # Cache the tokenized chunk
         tokenized_chunk = cached_tokenize(chunk, tokenizer)
 
         # Create sliding window sequences from the tokenized chunk
