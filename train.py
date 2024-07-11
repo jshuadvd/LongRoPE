@@ -17,6 +17,8 @@ from accelerate import Accelerator
 import wandb
 import os
 import logging
+import hashlib
+import pickle
 
 from evaluation import evaluate_passkey_retrieval
 
@@ -92,6 +94,23 @@ def validate_targets(targets, vocab_size):
         if any(t >= vocab_size for t in target_batch):
             raise ValueError("Target index out of vocabulary size range.")
     return True
+
+
+def cached_tokenize(text, tokenizer, cache_dir="tokenizer_cache"):
+    os.makedirs(cache_dir, exist_ok=True)
+    text_hash = hashlib.md5(text.encode()).hexdigest()
+    cache_file = os.path.join(cache_dir, f"{text_hash}.pkl")
+
+    if os.path.exists(cache_file):
+        with open(cache_file, "rb") as f:
+            return pickle.load(f)
+
+    tokenized = tokenizer.encode(text)
+
+    with open(cache_file, "wb") as f:
+        pickle.dump(tokenized, f)
+
+    return tokenized
 
 
 def preprocess_data(data, tokenizer, max_length, overlap):
