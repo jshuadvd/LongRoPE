@@ -35,6 +35,7 @@ accelerator = Accelerator()
 
 
 # %%
+# Streaming dataset for long sequences
 class StreamingDataset(IterableDataset):
     def __init__(self, dataset, tokenizer, max_length, overlap):
         self.dataset = dataset
@@ -244,6 +245,10 @@ def train(
             scaler.scale(loss).backward()
 
             if (i + 1) % gradient_accumulation_steps == 0:
+                # Gradient clipping
+                scaler.unscale_(optimizer)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+
                 # Update weights and reset gradients
                 scaler.step(optimizer)
                 scaler.update()
