@@ -19,6 +19,7 @@ import os
 import logging
 import hashlib
 import pickle
+from tqdm import tqdm
 
 from evaluation import evaluate_passkey_retrieval
 
@@ -131,6 +132,9 @@ def cached_tokenize(text, tokenizer, cache_dir="tokenizer_cache"):
     return tokenized
 
 
+from tqdm import tqdm
+
+
 def preprocess_data(data, tokenizer, max_length, overlap):
     """
     Preprocess the input data by tokenizing it in chunks and creating sliding window sequences.
@@ -146,20 +150,23 @@ def preprocess_data(data, tokenizer, max_length, overlap):
     """
     sequences = []
     start = 0
-    while start < len(data):
-        end = start + max_length
-        chunk = data[start:end]
-        # tokenized_chunk = tokenizer.encode(chunk)
-        # Cache the tokenized chunk
-        tokenized_chunk = cached_tokenize(chunk, tokenizer)
+    total_chunks = (len(data) - overlap) // (max_length - overlap)
 
-        # Create sliding window sequences from the tokenized chunk
-        chunk_sequences = create_sliding_window_chunks(
-            tokenized_chunk, max_length=max_length, overlap=overlap
-        )
-        sequences.extend(chunk_sequences)
+    with tqdm(total=total_chunks, desc="Preprocessing") as pbar:
+        while start < len(data):
+            end = start + max_length
+            chunk = data[start:end]
+            # Cache the tokenized chunk
+            tokenized_chunk = cached_tokenize(chunk, tokenizer)
 
-        start = end - overlap
+            # Create sliding window sequences from the tokenized chunk
+            chunk_sequences = create_sliding_window_chunks(
+                tokenized_chunk, max_length=max_length, overlap=overlap
+            )
+            sequences.extend(chunk_sequences)
+
+            start = end - overlap
+            pbar.update(1)
 
     return sequences
 
