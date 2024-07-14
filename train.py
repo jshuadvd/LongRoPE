@@ -14,12 +14,14 @@ from datasets import load_dataset, concatenate_datasets
 from importlib import reload
 import src.main
 from accelerate import Accelerator
+from tqdm import tqdm
 import wandb
 import os
 import logging
 import hashlib
 import pickle
-from tqdm import tqdm
+import GPUtil
+
 
 from evaluation import evaluate_passkey_retrieval
 
@@ -328,6 +330,12 @@ def train(
             f"Train Loss: {avg_train_loss:.4f}, Train Perplexity: {train_perplexity:.4f}, "
             f"Val Loss: {avg_val_loss:.4f}, Val Perplexity: {val_perplexity:.4f}"
         )
+
+        # Log GPU memory usage
+        for gpu in GPUtil.getGPUs():
+            gpu_memory_used = gpu.memoryUsed
+            logger.info(f"GPU {gpu.id} memory use: {gpu_memory_used}MB")
+            wandb.log({f"GPU_{gpu.id}_memory_used": gpu_memory_used})
 
         # Save checkpoint
         accelerator.save_state(
