@@ -134,9 +134,6 @@ def cached_tokenize(text, tokenizer, cache_dir="tokenizer_cache"):
     return tokenized
 
 
-from tqdm import tqdm
-
-
 def preprocess_data(data, tokenizer, max_length, overlap):
     """
     Preprocess the input data by tokenizing it in chunks and creating sliding window sequences.
