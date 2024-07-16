@@ -103,6 +103,10 @@ The LongRoPE model extends the context window of large language models beyond 2 
 
 "3." Progressive Extension Strategy:
 
+  ```python
+
+  ```
+
 ### Progressive Extension Strategy
 
 The architecture begins with a pre-trained LLM and extends its context window incrementally. Initially, the model is fine-tuned to handle a context length of 256k tokens. This progressive approach avoids the need for direct fine-tuning on extremely long texts, which are rare and computationally expensive to process. By gradually increasing the context length, the model can adapt more effectively to longer sequences.
