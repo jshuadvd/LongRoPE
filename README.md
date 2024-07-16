@@ -84,6 +84,7 @@ The LongRoPE model extends the context window of large language models beyond 2 
            angles = positions.unsqueeze(-1) * self.theta
            sin_cos = torch.stack([angles.cos(), angles.sin()], dim=-1)
            return sin_cos.view(*sin_cos.shape[:-2], -1)
+   ```
 
 2. Non-uniform Interpolation:
 
@@ -98,7 +99,7 @@ The LongRoPE model extends the context window of large language models beyond 2 
         interpolated_pos[..., 2 * i] *= scale
         interpolated_pos[..., 2 * i + 1] *= scale
     return interpolated_pos
-
+  ```
 
 ### Progressive Extension Strategy
 
