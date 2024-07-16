@@ -67,6 +67,25 @@ An in-depth look at the structural modifications and their implications for mode
 
 The **LongRoPE** model architecture is designed to extend the context window of large language models (LLMs) to over 2 million tokens, addressing the limitations of traditional Transformer architectures. The key innovation lies in the progressive extension strategy and the adjustment of positional embeddings.
 
+The LongRoPE model extends the context window of large language models beyond 2 million tokens. Key components include:
+
+1. Rotary Position Encoding (RoPE):
+   ```python
+   class RoPEPositionalEncoding(nn.Module):
+       def __init__(self, d_model, max_len=1000000, base=10000):
+           super().__init__()
+           self.d_model = d_model
+           self.max_len = max_len
+           self.base = base
+           self.theta = torch.tensor([base ** (-2 * (i // 2) / d_model) for i in range(d_model)])
+
+       def forward(self, positions):
+           angles = positions.unsqueeze(-1) * self.theta
+           sin_cos = torch.stack([angles.cos(), angles.sin()], dim=-1)
+           return sin_cos.view(*sin_cos.shape[:-2], -1)
+
+
+
 ### Progressive Extension Strategy
 
 The architecture begins with a pre-trained LLM and extends its context window incrementally. Initially, the model is fine-tuned to handle a context length of 256k tokens. This progressive approach avoids the need for direct fine-tuning on extremely long texts, which are rare and computationally expensive to process. By gradually increasing the context length, the model can adapt more effectively to longer sequences.
