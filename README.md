@@ -69,7 +69,7 @@ The **LongRoPE** model architecture is designed to extend the context window of 
 
 The LongRoPE model extends the context window of large language models beyond 2 million tokens. Key components include:
 
-1. Rotary Position Encoding (RoPE):
+"1." Rotary Position Encoding (RoPE):
 
   ```python
   class RoPEPositionalEncoding(nn.Module):
@@ -86,7 +86,7 @@ The LongRoPE model extends the context window of large language models beyond 2 
           return sin_cos.view(*sin_cos.shape[:-2], -1)
   ```
 
-2. Non-uniform Interpolation:
+"2." Non-uniform Interpolation:
 
   ```python
   def non_uniform_interpolation(pos_embed, extension_ratio, lambda_factors, n_hat):
@@ -100,6 +100,8 @@ The LongRoPE model extends the context window of large language models beyond 2 
         interpolated_pos[..., 2 * i + 1] *= scale
     return interpolated_pos
   ```
+
+"3." Progressive Extension Strategy:
 
 ### Progressive Extension Strategy
 
