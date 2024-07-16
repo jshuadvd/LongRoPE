@@ -71,20 +71,20 @@ The LongRoPE model extends the context window of large language models beyond 2 
 
 1. Rotary Position Encoding (RoPE):
 
-   ```python
-   class RoPEPositionalEncoding(nn.Module):
-       def __init__(self, d_model, max_len=1000000, base=10000):
-           super().__init__()
-           self.d_model = d_model
-           self.max_len = max_len
-           self.base = base
-           self.theta = torch.tensor([base ** (-2 * (i // 2) / d_model) for i in range(d_model)])
+  ```python
+  class RoPEPositionalEncoding(nn.Module):
+      def __init__(self, d_model, max_len=1000000, base=10000):
+          super().__init__()
+          self.d_model = d_model
+          self.max_len = max_len
+          self.base = base
+          self.theta = torch.tensor([base ** (-2 * (i // 2) / d_model) for i in range(d_model)])
 
-       def forward(self, positions):
-           angles = positions.unsqueeze(-1) * self.theta
-           sin_cos = torch.stack([angles.cos(), angles.sin()], dim=-1)
-           return sin_cos.view(*sin_cos.shape[:-2], -1)
-   ```
+      def forward(self, positions):
+          angles = positions.unsqueeze(-1) * self.theta
+          sin_cos = torch.stack([angles.cos(), angles.sin()], dim=-1)
+          return sin_cos.view(*sin_cos.shape[:-2], -1)
+  ```
 
 2. Non-uniform Interpolation:
 
