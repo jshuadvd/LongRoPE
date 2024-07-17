@@ -67,7 +67,7 @@ An in-depth look at the structural modifications and their implications for mode
 
 The **LongRoPE** model architecture is designed to extend the context window of large language models (LLMs) to over 2 million tokens, addressing the limitations of traditional Transformer architectures. The key innovation lies in the progressive extension strategy and the adjustment of positional embeddings.
 
-The LongRoPE model extends the context window of large language models beyond 2 million tokens. Key components include:
+Key components include:
 
 1. Rotary Position Encoding (RoPE):
 
@@ -102,9 +102,23 @@ The LongRoPE model extends the context window of large language models beyond 2 
   ```
 
 3. Progressive Extension Strategy:
-
   ```python
+   def progressive_extension(model, data, base_length, target_length, population_size, num_mutations, num_crossovers, max_iterations):
+       # Extend to 128k
+       lambda_factors_128k, n_hat_128k = search_lambda_factors(model, data, 128000 / base_length, population_size, num_mutations, num_crossovers, max_iterations)
+       model = fine_tune(model, data, 128000, lambda_factors_128k, n_hat_128k, steps=400)
 
+       # Extend to 256k
+       lambda_factors_256k, n_hat_256k = search_lambda_factors(model, data, 256000 / base_length, population_size, num_mutations, num_crossovers, max_iterations)
+       model = fine_tune(model, data, 256000, lambda_factors_256k, n_hat_256k, steps=600)
+
+       # Extend to target length
+       if target_length > 256000:
+           final_lambda_factors, final_n_hat = search_lambda_factors(model, data, target_length / base_length, population_size // 2, num_mutations // 2, num_crossovers // 2, max_iterations // 2)
+           model.lambda_factors["2048k"] = final_lambda_factors
+           model.n_hat["2048k"] = final_n_hat
+
+       return model, final_lambda_factors, final_n_hat, lambda_factors_256k, n_hat_256k
   ```
 
 ### Progressive Extension Strategy
