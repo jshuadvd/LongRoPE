@@ -34,7 +34,6 @@ metrics:
 - [Usage](#usage)
 - [Results](#results)
 - [Contributing](#contributing)
-- [Usage](#usage)
 - [Citation](#citation)
 
 ## Introduction
@@ -190,6 +189,8 @@ input_ids = torch.randn(2, target_length, d_model)
 output = model(input_ids)
 print(output.shape)  # Expected shape: (batch_size, target_length, d_model)
 ```
+
+## Results
 
 ## Citation
 
