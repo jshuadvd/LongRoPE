@@ -192,6 +192,9 @@ print(output.shape)  # Expected shape: (batch_size, target_length, d_model)
 
 ## Results
 
+My implementation of LongRoPE achieves the following results:
+
+
 ## Citation
 
 ```bibtex
