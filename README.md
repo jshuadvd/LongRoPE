@@ -24,10 +24,11 @@ metrics:
 # LongRoPE: Extending LLM Context Window Beyond 2 Million Tokens
 
 ## Table of Contents
+
 - [Introduction](#introduction)
 - [Description](#description)
-- [Model Architecture](#model-architecture)
 - [Implementation Highlights](#implementation-highlights)
+- [Model Architecture](#model-architecture)
 - [Getting Started](#getting-started)
 - [Usage](#usage)
 - [Results](#results)
