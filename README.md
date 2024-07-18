@@ -33,6 +33,7 @@ metrics:
 - [Usage](#usage)
 - [Results](#results)
 - [Contributing](#contributing)
+- [Usage](#usage)
 - [Citation](#citation)
 
 ## Introduction
