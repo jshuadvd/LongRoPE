@@ -194,6 +194,11 @@ print(output.shape)  # Expected shape: (batch_size, target_length, d_model)
 
 My implementation of LongRoPE achieves the following results:
 
+1. Perplexity:
+   - 4k context: X.XX
+   - 128k context: X.XX
+   - 2048k context: X.XX
+
 
 ## Citation
 
