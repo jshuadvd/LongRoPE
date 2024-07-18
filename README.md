@@ -114,6 +114,7 @@ Key components include:
   ```
 
 3. Progressive Extension Strategy:
+
   ```python
    def progressive_extension(model, data, base_length, target_length, population_size, num_mutations, num_crossovers, max_iterations):
        # Extend to 128k
@@ -154,7 +155,6 @@ The architecture incorporates several structural modifications to handle the inc
 
 
 ### Performance and Applications
-
 
 Experiments demonstrate that LongRoPE maintains low perplexity across evaluation lengths from 4k to 2048k tokens and achieves high accuracy in tasks requiring long contexts. This makes it suitable for various applications, including in-context learning, long document summarization, and few-shot learning.
 
