@@ -197,6 +197,10 @@ Custom Dataset Training
 
 To train on a custom dataset:
 
+1. Prepare your dataset in a format compatible with the datasets library.
+2. Implement a custom preprocess_data function if needed.
+3. Use the extend_context method with your custom data.
+
 ## Results
 
 My implementation of LongRoPE achieves the following results:
