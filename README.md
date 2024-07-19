@@ -154,6 +154,7 @@ The architecture incorporates several structural modifications to handle the inc
 
 - **Attention Mechanisms**: Enhanced attention mechanisms are integrated to ensure that the model can focus on relevant parts of the input sequence, even with the extended context.
 
+- **Token-wise Attention**: Token-wise attention mechanisms are introduced to capture the contextual relationships between tokens, allowing the model to better understand the semantic meaning of the input.
 
 ### Performance and Applications
 
