@@ -199,6 +199,11 @@ My implementation of LongRoPE achieves the following results:
    - 128k context: X.XX
    - 2048k context: X.XX
 
+2. Passkey Retrieval Accuracy:
+   - 4k context: XX%
+   - 128k context: XX%
+   - 2048k context: XX%
+
 
 ## Citation
 
