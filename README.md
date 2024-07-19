@@ -204,10 +204,12 @@ My implementation of LongRoPE achieves the following results:
    - 128k context: XX%
    - 2048k context: XX%
 
-3. Few-shot Accuracy:
+3. Accuracy:
    - 4k context: XX%
    - 128k context: XX%
    - 2048k context: XX%
+
+4. Comparison with baseline models:
 
 
 ## Citation
