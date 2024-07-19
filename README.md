@@ -211,7 +211,6 @@ My implementation of LongRoPE achieves the following results:
 
 4. Comparison with baseline models:
 
-
 ## Citation
 
 ```bibtex
