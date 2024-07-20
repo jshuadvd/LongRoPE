@@ -206,7 +206,7 @@ LongRoPE's performance can be sensitive to hyperparameters. Key parameters to tu
 
 `population_size`, `num_mutations`, and `num_crossovers` in the lambda factor search
 Learning rate and scheduler parameters for fine-tuning
-gradient_accumulation_steps for training stability
+`gradient_accumulation_steps` for training stability
 
 ## Results
 
