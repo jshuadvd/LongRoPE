@@ -201,6 +201,9 @@ To train on a custom dataset:
 2. Implement a custom preprocess_data function if needed.
 3. Use the extend_context method with your custom data.
 
+Hyperparameter Tuning
+LongRoPE's performance can be sensitive to hyperparameters. Key parameters to tune include:
+
 ## Results
 
 My implementation of LongRoPE achieves the following results:
