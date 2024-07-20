@@ -204,6 +204,11 @@ To train on a custom dataset:
 Hyperparameter Tuning
 LongRoPE's performance can be sensitive to hyperparameters. Key parameters to tune include:
 
+- **Base Length**: The initial context length used for fine-tuning.
+- **Target Length**: The final context length to extend to.
+- **Population Size**: The number of candidate solutions to search for during the search algorithm.
+- **Number of Mutations**: The number of mutations to perform during the search algorithm.
+
 ## Results
 
 My implementation of LongRoPE achieves the following results:
